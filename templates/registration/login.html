@@ -1,0 +1,283 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+    
+    #container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        margin: 0;
+    }
+    
+    .login-container {
+        max-width: 420px;
+        width: 100%;
+        margin: 0 auto;
+    }
+    
+    .logo {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    
+    .logo img {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: white;
+        padding: 5px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        display: inline-block;
+    }
+    
+    #header {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+    
+    #branding {
+        display: none;
+    }
+    
+    .custom-title {
+        text-align: center;
+        margin-bottom: 5px;
+    }
+    
+    .custom-title h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+    }
+    
+    .custom-title p {
+        font-size: 13px;
+        color: #888;
+        margin: 5px 0 0;
+    }
+    
+    #content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    #content-main {
+        background: white;
+        border-radius: 20px;
+        padding: 30px 28px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .login-form {
+        margin: 0;
+    }
+    
+    .form-row {
+        margin-bottom: 18px;
+        padding: 0;
+        border: none;
+    }
+    
+    .form-row label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 6px;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .form-row input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+    
+    .form-row input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+    
+    .submit-row {
+        margin: 25px 0 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        text-align: center;
+    }
+    
+    .submit-row input {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .submit-row input:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+    
+    .errornote {
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 10px;
+        border-radius: 10px;
+        margin: 0 0 20px;
+        font-size: 12px;
+        text-align: center;
+        border: none;
+    }
+    
+    .password-reset-link {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .password-reset-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        transition: color 0.3s;
+    }
+    
+    .password-reset-link a:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+    
+    .footer {
+        text-align: center;
+        margin-top: 15px;
+        color: rgba(255,255,255,0.7);
+        font-size: 11px;
+    }
+    
+    @media (max-width: 480px) {
+        #content-main {
+            padding: 25px 20px;
+        }
+        .custom-title h1 {
+            font-size: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block title %}Login | Taiping Taekwondo Club{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Taiping Taekwondo Club</a></h1>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block usertools %}{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="logo">
+        <img src="{% static 'images/logo.png' %}" alt="Taiping Taekwondo Club">
+    </div>
+    
+    <div id="content-main">
+        <div class="custom-title">
+            <h1>Taiping Taekwondo Club</h1>
+            <p>Management System</p>
+        </div>
+        
+        {% if form.errors and not form.non_field_errors %}
+            <div class="errornote">
+                {% if form.errors.items|length == 1 %}
+                    {% translate "Please correct the error below." %}
+                {% else %}
+                    {% translate "Please correct the errors below." %}
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="errornote">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
+        
+        <form action="{{ app_path }}" method="post" id="login-form" class="login-form">
+            {% csrf_token %}
+            <div class="form-row">
+                {{ form.username.label_tag }}
+                {{ form.username }}
+            </div>
+            <div class="form-row">
+                {{ form.password.label_tag }}
+                {{ form.password }}
+            </div>
+            {% url 'admin_password_reset' as password_reset_url %}
+            {% if password_reset_url %}
+            <div class="password-reset-link">
+                <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+            </div>
+            {% endif %}
+            <div class="submit-row">
+                <input type="submit" value="{% translate 'Log in' %}">
+            </div>
+        </form>
+    </div>
+    
+    <div class="footer">
+        © 2025 Taiping Taekwondo Club
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login</title>
+</head>
+<body>
+    <h2>Test Parent Login</h2>
+    <form id="loginForm">
+        IC Number: <input type="text" id="ic" value="830728085911"><br><br>
+        Password: <input type="password" id="pwd" value="123456"><br><br>
+        <button type="button" onclick="testLogin()">Login</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            const ic = document.getElementById('ic').value;
+            const pwd = document.getElementById('pwd').value;
+            
+            try {
+                const response = await fetch('/api/parent/login/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ic_number: ic, password: pwd})
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

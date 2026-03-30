@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Taiping Taekwondo Club - Parent Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            max-width: 420px;
+            width: 100%;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .logo img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 28px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+        
+        .input-group {
+            margin-bottom: 18px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        
+        .btn-logout {
+            background: #ef4444;
+            margin-top: 20px;
+        }
+        
+        .btn-logout:hover {
+            background: #dc2626;
+            box-shadow: 0 5px 15px rgba(239,68,68,0.3);
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .belt-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .fee-section h3 {
+            font-size: 16px;
+            margin: 15px 0 12px;
+            color: #333;
+        }
+        
+        .fee-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .fee-table th {
+            background: #667eea;
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .fee-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .fee-table tr:hover {
+            background: #fafafa;
+        }
+        
+        .status-paid { color: #10b981; font-weight: 600; }
+        .status-pending { color: #f59e0b; font-weight: 600; }
+        .status-overdue { color: #ef4444; font-weight: 600; }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 13px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            color: rgba(255,255,255,0.7);
+            font-size: 11px;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            {% load static %}
+            <img src="{% static 'images/logo.png' %}" alt="Taiping Taekwondo Club">
+        </div>
+        
+        <div class="card" id="loginDiv">
+            <h1>Taiping Taekwondo Club</h1>
+            <div class="subtitle">Parent Portal Login</div>
+            
+            <div class="input-group">
+                <label>IC Number</label>
+                <input type="text" id="icNumber" placeholder="830728085911" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <button class="btn" onclick="login()">Login</button>
+            <div id="errorMsg" class="error" style="display:none"></div>
+        </div>
+        
+        <div class="card" id="studentDiv" style="display:none">
+            <h1>Welcome, <span id="studentName"></span>!</h1>
+            <div class="subtitle">Student Information</div>
+            
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-label">Belt Rank:</span>
+                    <span class="info-value"><span class="belt-badge" id="beltRank"></span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">School:</span>
+                    <span class="info-value" id="schoolName"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Student IC:</span>
+                    <span class="info-value" id="studentIc"></span>
+                </div>
+            </div>
+            
+            <div class="fee-section">
+                <h3>📅 Monthly Fee Status</h3>
+                <div id="feeLoading" class="loading" style="display:none">Loading fees...</div>
+                <div id="feeTable" class="table-wrapper"></div>
+            </div>
+            
+            <button class="btn btn-logout" onclick="logout()">Logout</button>
+        </div>
+        
+        <div class="footer">
+            © 2025 Taiping Taekwondo Club
+        </div>
+    </div>
+
+    <script>
+    let token = null;
+    let baseUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
+    
+    async function login() {
+        const icNumber = document.getElementById('icNumber').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (!icNumber || !password) {
+            showError('Please enter IC number and password');
+            return;
+        }
+        
+        showError('', false);
+        
+        try {
+            const response = await fetch(`${baseUrl}/api/parent/login/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ic_number: icNumber, password: password})
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                token = data.token;
+                document.getElementById('studentName').innerText = data.student_name;
+                document.getElementById('beltRank').innerText = data.belt_rank;
+                document.getElementById('schoolName').innerText = data.school_name;
+                document.getElementById('studentIc').innerText = data.student_ic;
+                document.getElementById('loginDiv').style.display = 'none';
+                document.getElementById('studentDiv').style.display = 'block';
+                loadFees();
+            } else {
+                showError(data.error || 'Login failed');
+            }
+        } catch (error) {
+            showError('Connection error. Please try again.');
+        }
+    }
+    
+    async function loadFees() {
+        const loadingDiv = document.getElementById('feeLoading');
+        const tableDiv = document.getElementById('feeTable');
+        
+        loadingDiv.style.display = 'block';
+        tableDiv.innerHTML = '';
+        
+        try {
+            const response = await fetch(`${baseUrl}/api/parent/fees/`, {
+                headers: {'Authorization': `Token ${token}`}
+            });
+            const fees = await response.json();
+            
+            loadingDiv.style.display = 'none';
+            
+            if (!fees || fees.length === 0) {
+                tableDiv.innerHTML = '<div class="loading">No fee records found.</div>';
+                return;
+            }
+            
+            fees.sort((a, b) => new Date(a.month) - new Date(b.month));
+            
+            let html = '<table class="fee-table"><thead> <tr>' +
+                '<th>Month</th><th>Amount</th><th>Due Date</th><th>Status</th>' +
+                '</tr></thead><tbody>';
+            
+            fees.forEach(fee => {
+                let statusClass = '';
+                if (fee.status === 'paid') statusClass = 'status-paid';
+                else if (fee.status === 'pending') statusClass = 'status-pending';
+                else if (fee.status === 'overdue') statusClass = 'status-overdue';
+                
+                let monthDisplay = fee.month;
+                if (fee.month) {
+                    const date = new Date(fee.month);
+                    monthDisplay = date.toLocaleDateString('en-MY', { year: 'numeric', month: 'short' });
+                }
+                
+                html += `<tr>
+                    <td>${monthDisplay}</td>
+                    <td>RM ${parseFloat(fee.amount).toFixed(2)}</td>
+                    <td>${fee.due_date}</td>
+                    <td class="${statusClass}">${fee.status_display}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            tableDiv.innerHTML = html;
+            
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            tableDiv.innerHTML = '<div class="loading" style="color:#dc2626;">Error loading fees</div>';
+        }
+    }
+    
+    function showError(msg, show = true) {
+        const errorDiv = document.getElementById('errorMsg');
+        if (show && msg) {
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = msg;
+        } else {
+            errorDiv.style.display = 'none';
+            errorDiv.innerText = '';
+        }
+    }
+    
+    function logout() {
+        token = null;
+        document.getElementById('loginDiv').style.display = 'block';
+        document.getElementById('studentDiv').style.display = 'none';
+        document.getElementById('icNumber').value = '';
+        document.getElementById('password').value = '';
+        showError('', false);
+    }
+    
+    document.getElementById('password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') login();
+    });
+    </script>
+</body>
+</html>

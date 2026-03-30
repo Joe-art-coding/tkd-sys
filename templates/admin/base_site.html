@@ -1,0 +1,237 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Taiping Taekwondo Club{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Soft, calming color scheme */
+    :root {
+        --primary-color: #3b82f6;
+        --primary-soft: #60a5fa;
+        --primary-light: #eff6ff;
+        --secondary-color: #06b6d4;
+        --secondary-soft: #22d3ee;
+        --bg-main: #f8fafc;
+        --sidebar-bg: #ffffff;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-light: #334155;
+        --border-light: #e2e8f0;
+    }
+    
+    body {
+        background: var(--bg-main);
+        color: var(--text-main);
+    }
+    
+    /* Header styling - Navy blue to teal gradient */
+    #header {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #0284c7 100%);
+        border-bottom: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 12px 20px;
+    }
+    
+    #header h1 a {
+        color: white;
+        font-weight: 600;
+        font-size: 18px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    #header h1 a:hover {
+        opacity: 0.9;
+    }
+    
+    /* Module headers */
+    .module h2, .module caption, .inline-group h2 {
+        background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-weight: 600;
+        border: none;
+        font-size: 14px;
+    }
+    
+    /* Table headers */
+    table thead th {
+        background: #f1f5f9;
+        color: var(--text-main);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-light);
+        font-size: 13px;
+    }
+    
+    /* Table cells */
+    td, th {
+        color: var(--text-main);
+    }
+    
+    /* Buttons */
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        color: white;
+        transition: all 0.2s;
+    }
+    
+    .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    /* Object tools */
+    .object-tools a {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 6px;
+        padding: 8px 16px;
+        color: white;
+    }
+    
+    .object-tools a:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+    }
+    
+    /* Dashboard modules */
+    .module {
+        background: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-light);
+    }
+    
+    /* Sidebar */
+    #nav-sidebar {
+        background: var(--sidebar-bg);
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid var(--border-light);
+    }
+    
+    /* Links */
+    a:link, a:visited {
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    a:hover {
+        color: #06b6d4;
+        text-decoration: underline;
+    }
+    
+    /* Breadcrumbs */
+    div.breadcrumbs {
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-light);
+        padding: 12px 20px;
+    }
+    
+    div.breadcrumbs a {
+        color: #3b82f6;
+    }
+    
+    /* Form fields */
+    input, textarea, select {
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        padding: 8px 12px;
+        background: white;
+        color: var(--text-main);
+    }
+    
+    input:focus, textarea:focus, select:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 2px #dbeafe;
+    }
+    
+    /* Messaging */
+    .success {
+        background: #ecfdf5;
+        color: #065f46;
+        border-left-color: #10b981;
+    }
+    
+    .info {
+        background: #eff6ff;
+        color: #1e40af;
+        border-left-color: #3b82f6;
+    }
+    
+    .warning {
+        background: #fffbeb;
+        color: #92400e;
+        border-left-color: #f59e0b;
+    }
+    
+    .error {
+        background: #fef2f2;
+        color: #991b1b;
+        border-left-color: #ef4444;
+    }
+    
+    /* Change list */
+    #changelist .actions {
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+    }
+    
+    /* Pagination */
+    .paginator {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 10px;
+        border: 1px solid var(--border-light);
+        color: var(--text-main);
+    }
+    
+    .paginator a:link, .paginator a:visited {
+        color: #3b82f6;
+    }
+    
+    /* Dashboard titles */
+    h1, h2, h3, h4 {
+        color: var(--text-main);
+    }
+    
+    /* Calendar and time widgets */
+    .calendarbox, .clockbox {
+        background: white;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Darken the text in widgets */
+    .calendarbox th, .calendarbox td {
+        color: var(--text-main);
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<div style="display: flex; align-items: center;">
+    <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 35px; width: auto; border-radius: 50%; margin-right: 12px; background: white; padding: 2px;">
+    <h1 id="site-name"><a href="{% url 'admin:index' %}" style="font-weight: 600;">Taiping Taekwondo Club</a></h1>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<div style="float: right; margin: 10px;">
+    <a href="/dashboard/" style="background: #10b981; color: white; padding: 6px 14px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 13px;">📊 Dashboard</a>
+    <a href="/attendance/take/" style="background: #3b82f6; color: white; padding: 6px 14px; text-decoration: none; border-radius: 6px; margin-left: 8px; font-weight: 500; font-size: 13px;">📝 Take Attendance</a>
+</div>
+{% endblock %}
