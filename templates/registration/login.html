@@ -13,7 +13,7 @@
     }
     
     body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, {{ current_club.primary_color|default:'#667eea' }} 0%, {{ current_club.secondary_color|default:'#764ba2' }} 100%);
         font-family: 'Poppins', sans-serif;
         display: flex;
         align-items: center;
@@ -129,7 +129,7 @@
     
     .form-row input:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: {{ current_club.primary_color|default:'#667eea' }};
         box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
     }
     
@@ -143,7 +143,7 @@
     .submit-row input {
         width: 100%;
         padding: 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, {{ current_club.primary_color|default:'#667eea' }} 0%, {{ current_club.secondary_color|default:'#764ba2' }} 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -178,7 +178,7 @@
     }
     
     .password-reset-link a {
-        color: #667eea;
+        color: {{ current_club.primary_color|default:'#667eea' }};
         text-decoration: none;
         font-size: 12px;
         font-weight: 500;
@@ -186,7 +186,7 @@
     }
     
     .password-reset-link a:hover {
-        color: #764ba2;
+        color: {{ current_club.secondary_color|default:'#764ba2' }};
         text-decoration: underline;
     }
     
@@ -208,10 +208,10 @@
 </style>
 {% endblock %}
 
-{% block title %}Login | Taiping Taekwondo Club{% endblock %}
+{% block title %}Login | {{ current_club.name|default:'Taekwondo Club' }}{% endblock %}
 
 {% block branding %}
-<h1 id="site-name"><a href="{% url 'admin:index' %}">Taiping Taekwondo Club</a></h1>
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ current_club.name|default:'Taekwondo Club' }}</a></h1>
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} login{% endblock %}
@@ -229,12 +229,16 @@
 {% block content %}
 <div class="login-container">
     <div class="logo">
-        <img src="{% static 'images/logo.png' %}" alt="Taiping Taekwondo Club">
+        {% if current_club.logo %}
+            <img src="{{ current_club.logo.url }}" alt="{{ current_club.name }}">
+        {% else %}
+            <img src="{% static 'images/logo.png' %}" alt="{{ current_club.name|default:'Taekwondo Club' }}">
+        {% endif %}
     </div>
     
     <div id="content-main">
         <div class="custom-title">
-            <h1>Taiping Taekwondo Club</h1>
+            <h1>{{ current_club.name|default:'Taekwondo Club' }}</h1>
             <p>Management System</p>
         </div>
         
@@ -277,7 +281,7 @@
     </div>
     
     <div class="footer">
-        © 2025 Taiping Taekwondo Club
+        © {% now "Y" %} {{ current_club.name|default:'Taekwondo Club' }}
     </div>
 </div>
 {% endblock %}

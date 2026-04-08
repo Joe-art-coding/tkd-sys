@@ -1,0 +1,58 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div style="padding: 20px;">
+    <h1>Student Fees</h1>
+    <p>Click on a student to view their full fee history</p>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+            <tr style="background: #79aec8; color: white;">
+                <th style="padding: 10px; text-align: left;">Student Name</th>
+                <th style="padding: 10px; text-align: left;">IC Number</th>
+                <th style="padding: 10px; text-align: left;">School</th>
+                <th style="padding: 10px; text-align: left;">Belt</th>
+                <th style="padding: 10px; text-align: left;">Latest Fee</th>
+                <th style="padding: 10px; text-align: left;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in student_fees %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;">
+                    <a href="{% url 'fee_student_detail' item.student.id %}" style="color: #79aec8; text-decoration: none;">
+                        {{ item.student.name }}
+                    </a>
+                </td>
+                <td style="padding: 10px;">{{ item.student.ic_number }}</td>
+                <td style="padding: 10px;">{{ item.student.school.name }}</td>
+                <td style="padding: 10px;">{{ item.student.get_belt_rank_display }}</td>
+                <td style="padding: 10px;">
+                    {% if item.latest_fee %}
+                        RM {{ item.latest_fee.amount }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td style="padding: 10px;">
+                    {% if item.latest_fee %}
+                        <span style="
+                            {% if item.latest_fee.status == 'paid' %}color: green; font-weight: bold;
+                            {% elif item.latest_fee.status == 'overdue' %}color: red; font-weight: bold;
+                            {% else %}color: orange; font-weight: bold;
+                            {% endif %}">
+                            {{ item.latest_fee.status|upper }}
+                        </span>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="padding: 20px; text-align: center;">No students found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

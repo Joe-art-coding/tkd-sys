@@ -1,0 +1,158 @@
+============================================================
+DATA RAINTOWN TAEKWONDO CLUB
+Tarikh: 2026-04-07
+============================================================
+
+🏢 CLUB:
+   Nama: Raintown TaeKwonDo Club
+   Subdomain: rtc
+   Warna: #007bff
+
+🏫 SCHOOLS (6):
+   - RainTown Bukit Jalil
+     Code: RT002
+     Monthly Fee: RM 130.00
+     Phone: 03-87654321
+   - RainTown Main Academy
+     Code: RT001
+     Monthly Fee: RM 120.00
+     Phone: 03-12345678
+   - RainTown Puchong
+     Code: RT003
+     Monthly Fee: RM 110.00
+     Phone: 03-11223344
+   - SERATAS
+     Code: STS
+     Monthly Fee: RM 50.00
+     Phone: 0194321672
+   - SK AULONG
+     Code: SKA
+     Monthly Fee: RM 40.00
+     Phone: 0183125671
+   - SK TAMAN TASIK
+     Code: SKTT
+     Monthly Fee: RM 35.00
+     Phone: 0183125230
+
+👑 CLUB ADMIN:
+   - azizah
+     Email: azizah@msn.com
+     Phone: 
+   - raintown_admin
+     Email: admin@raintown.com
+     Phone: 012-3456789
+
+👨‍🏫 COACHES (3):
+   - coach_rt_ali
+     Nama: Ali Bin Ahmad
+     Phone: 012-1112223
+     Schools: RainTown Bukit Jalil
+   - coach_rt_siti
+     Nama: Siti Bt Abdullah
+     Phone: 012-4445556
+     Schools: RainTown Main Academy
+   - coach_rt_ahmad
+     Nama: Ahmad Bin Hassan
+     Phone: 012-7778889
+     Schools: RainTown Main Academy, RainTown Bukit Jalil
+
+🎓 STUDENTS (6):
+   - Muhammad Danish
+     ID: RTC2026001
+     IC: 050101141234
+     Belt: Blue Belt 1
+     School: RainTown Main Academy
+     Phone: 012-3456789
+   - Nur Aisyah
+     ID: RTC2026002
+     IC: 050202145678
+     Belt: Green Belt 1
+     School: RainTown Main Academy
+     Phone: 012-3456780
+   - Lim Zheng Wei
+     ID: RTC2026003
+     IC: 050303149012
+     Belt: Yellow Belt 2
+     School: RainTown Main Academy
+     Phone: 012-3456781
+   - Thivya a/p Raj
+     ID: RTC2026004
+     IC: 060404143456
+     Belt: Yellow Belt 1
+     School: RainTown Bukit Jalil
+     Phone: 012-3456782
+   - Muhammad Haikal
+     ID: RTC2026005
+     IC: 060505147890
+     Belt: White Belt
+     School: RainTown Bukit Jalil
+     Phone: 012-3456783
+   - Wong Mei Ling
+     ID: RTC2026006
+     IC: 070606141234
+     Belt: White Belt
+     School: RainTown Puchong
+     Phone: 012-3456784
+
+👨‍👩‍👧 PARENTS (12):
+   - parent_rtc_800101141234
+     Student: Muhammad Danish
+     Password: parent123456
+   - parent_800101141234
+     Student: Muhammad Danish
+     Password: parent123456
+   - parent_rtc_800202145678
+     Student: Nur Aisyah
+     Password: parent123456
+   - parent_800202145678
+     Student: Nur Aisyah
+     Password: parent123456
+   - parent_rtc_800303149012
+     Student: Lim Zheng Wei
+     Password: parent123456
+   - parent_800303149012
+     Student: Lim Zheng Wei
+     Password: parent123456
+   - parent_rtc_810404143456
+     Student: Thivya a/p Raj
+     Password: parent123456
+   - parent_810404143456
+     Student: Thivya a/p Raj
+     Password: parent123456
+   - parent_rtc_810505147890
+     Student: Muhammad Haikal
+     Password: parent123456
+   - parent_810505147890
+     Student: Muhammad Haikal
+     Password: parent123456
+   - parent_rtc_820606141234
+     Student: Wong Mei Ling
+     Password: parent123456
+   - parent_820606141234
+     Student: Wong Mei Ling
+     Password: parent123456
+
+💰 FEES SUMMARY:
+   Total Fees: 72
+   Paid: 0
+   Pending: 54
+   Overdue: 18
+   Total Amount: RM 8,760.00
+
+📅 FEES BY MONTH 2026:
+   Month 01: 0 paid, 0 pending | Amount: RM 730.00
+   Month 02: 0 paid, 0 pending | Amount: RM 730.00
+   Month 03: 0 paid, 0 pending | Amount: RM 730.00
+   Month 04: 0 paid, 6 pending | Amount: RM 730.00
+   Month 05: 0 paid, 6 pending | Amount: RM 730.00
+   Month 06: 0 paid, 6 pending | Amount: RM 730.00
+   Month 07: 0 paid, 6 pending | Amount: RM 730.00
+   Month 08: 0 paid, 6 pending | Amount: RM 730.00
+   Month 09: 0 paid, 6 pending | Amount: RM 730.00
+   Month 10: 0 paid, 6 pending | Amount: RM 730.00
+   Month 11: 0 paid, 6 pending | Amount: RM 730.00
+   Month 12: 0 paid, 6 pending | Amount: RM 730.00
+
+============================================================
+✅ REPORT COMPLETE
+============================================================

@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parent Portal - {{ student_name }} | {{ club_name|default:'Taekwondo Club' }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .logo img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 28px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        
+        .overdue-badge {
+            background: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+        
+        /* Tab Buttons */
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: -2px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Child Selector */
+        .child-selector {
+            background: #f0f0f0;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .child-btn {
+            padding: 8px 16px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .child-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .child-btn.inactive {
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .child-btn.inactive:hover {
+            background: #ccc;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .belt-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        /* Schedule Card */
+        .schedule-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .schedule-day {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .schedule-time {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .schedule-details {
+            color: #666;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        /* Contact Card */
+        .contact-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .contact-icon {
+            width: 45px;
+            height: 45px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .contact-info {
+            flex: 1;
+        }
+        
+        .contact-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .contact-role {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .contact-phone {
+            font-size: 14px;
+            color: #667eea;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        
+        .contact-phone:hover {
+            text-decoration: underline;
+        }
+        
+        .emergency-badge {
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .data-table th {
+            background: #667eea;
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .data-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table tr:hover {
+            background: #fafafa;
+        }
+        
+        .status-paid { color: #10b981; font-weight: 600; }
+        .status-pending { color: #f59e0b; font-weight: 600; }
+        .status-overdue { color: #ef4444; font-weight: 600; }
+        
+        .present-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .absent-badge {
+            background: #ef4444;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 13px;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+            font-size: 13px;
+        }
+        
+        .btn-logout {
+            width: 100%;
+            padding: 12px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .btn-logout:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239,68,68,0.3);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            color: rgba(255,255,255,0.7);
+            font-size: 11px;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        /* Download Button Styles */
+        .download-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .download-btn:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+        
+        .download-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .no-receipt {
+            color: #94a3b8;
+            font-size: 11px;
+            font-style: italic;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background-color: #10b981;
+        }
+        
+        .toast.error {
+            background-color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Toast Notification -->
+        <div id="toast" class="toast"></div>
+        
+        <div class="logo">
+            {% load static %}
+            {% if club_logo %}
+                <img src="{{ club_logo }}" alt="{{ club_name }}">
+            {% else %}
+                <img src="{% static 'images/logo.png' %}" alt="Taekwondo Club">
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <div class="header-flex">
+                <h1>{{ club_name|default:'Parent Portal' }}</h1>
+                <div class="overdue-badge">
+                    ⚠️ Total Overdue: RM <span id="totalOverdueAmount">0.00</span>
+                </div>
+            </div>
+            <div class="subtitle">Welcome, Parent!</div>
+            
+            <!-- Child Selector - Show if more than 1 child -->
+            {% if children|length > 1 %}
+            <div class="child-selector">
+                {% for child in children %}
+                <a href="?ic={{ student_ic }}&password={{ request.GET.password }}&student_id={{ child.id }}" 
+                   class="child-btn {% if child.id == current_student.id %}active{% else %}inactive{% endif %}">
+                    {{ child.name }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Student Information -->
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">{{ student_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Belt Rank:</span>
+                    <span class="info-value"><span class="belt-badge">{{ belt_rank }}</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">School:</span>
+                    <span class="info-value">{{ school_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Student IC:</span>
+                    <span class="info-value">{{ student_ic }}</span>
+                </div>
+            </div>
+            
+            <!-- Tab Buttons -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="showTab('fees')">💰 Fees</button>
+                <button class="tab-btn" onclick="showTab('attendance')">📝 Attendance</button>
+                <button class="tab-btn" onclick="showTab('schedule')">📅 Class Schedule</button>
+                <button class="tab-btn" onclick="showTab('contact')">📞 Contact Info</button>
+            </div>
+            
+            <!-- Fees Tab -->
+            <div id="feesTab" class="tab-content active">
+                <div class="fee-section">
+                    <h3>📅 Monthly Fee Status</h3>
+                    <div id="feeLoading" class="loading" style="display:none">Loading fees...</div>
+                    <div id="feeTable" class="table-wrapper"></div>
+                </div>
+            </div>
+            
+            <!-- Attendance Tab -->
+            <div id="attendanceTab" class="tab-content">
+                <div class="attendance-section">
+                    <h3>📊 Attendance Summary</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalPresent">-</div>
+                            <div class="stat-label">Present</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalAbsent">-</div>
+                            <div class="stat-label">Absent</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="attendanceRate">-</div>
+                            <div class="stat-label">Attendance Rate</div>
+                        </div>
+                    </div>
+                    
+                    <h3>📋 Attendance History</h3>
+                    <div id="attendanceLoading" class="loading" style="display:none">Loading attendance...</div>
+                    <div id="attendanceTable" class="table-wrapper"></div>
+                </div>
+            </div>
+            
+            <!-- Class Schedule Tab -->
+            <div id="scheduleTab" class="tab-content">
+                <h3>📅 Class Schedule</h3>
+                {% if class_schedule %}
+                    {% for schedule in class_schedule %}
+                    <div class="schedule-card">
+                        <div class="schedule-day">{{ schedule.get_day_display }}</div>
+                        <div class="schedule-time">{{ schedule.start_time|time:"g:i A" }} - {{ schedule.end_time|time:"g:i A" }}</div>
+                        <div class="schedule-details">
+                            🥋 Belt: {{ schedule.belt_level }}<br>
+                            👨‍🏫 Instructor: {{ schedule.instructor }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-message">
+                        No class schedule available for this school.<br>
+                        Please contact your coach for class timings.
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Contact Info Tab -->
+            <div id="contactTab" class="tab-content">
+                <h3>📞 Contact Information</h3>
+                {% if contact_info %}
+                    {% for contact in contact_info %}
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            {% if contact.is_emergency %}🚨{% else %}👤{% endif %}
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">
+                                {{ contact.name }}
+                                {% if contact.is_emergency %}
+                                    <span class="emergency-badge">EMERGENCY</span>
+                                {% endif %}
+                            </div>
+                            <div class="contact-role">{{ contact.role }}</div>
+                            <a href="tel:{{ contact.phone }}" class="contact-phone">📞 {{ contact.phone }}</a>
+                            {% if contact.email %}
+                                <div style="margin-top: 5px;">
+                                    <a href="mailto:{{ contact.email }}" style="color: #667eea; font-size: 12px; text-decoration: none;">✉️ {{ contact.email }}</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-message">
+                        No contact information available.<br>
+                        Please contact your coach directly.
+                    </div>
+                {% endif %}
+            </div>
+            
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+        
+        <div class="footer">
+            © {% now "Y" %} {{ club_name|default:'Taekwondo Club' }}
+        </div>
+    </div>
+
+    <script>
+        let token = "{{ token }}";
+        let currentStudentId = "{{ current_student.id }}";
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+        
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.getElementById('feesTab').classList.remove('active');
+            document.getElementById('attendanceTab').classList.remove('active');
+            document.getElementById('scheduleTab').classList.remove('active');
+            document.getElementById('contactTab').classList.remove('active');
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            if (tabName === 'fees') {
+                document.getElementById('feesTab').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+                loadFees();
+            } else if (tabName === 'attendance') {
+                document.getElementById('attendanceTab').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+                loadAttendance();
+            } else if (tabName === 'schedule') {
+                document.getElementById('scheduleTab').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+            } else if (tabName === 'contact') {
+                document.getElementById('contactTab').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(4)').classList.add('active');
+            }
+        }
+        
+        // Download Receipt Function
+        async function downloadReceipt(feeId, button) {
+            const url = `/api/parent/receipt/download/${feeId}/?token=${token}`;
+            
+            try {
+                // Disable button and show loading
+                if (button) {
+                    button.disabled = true;
+                    button.innerHTML = '⏳ Downloading...';
+                }
+                
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    // Create blob and trigger download
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `receipt_${feeId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(downloadUrl);
+                    showToast('Receipt downloaded successfully!', 'success');
+                } else if (response.status === 401) {
+                    showToast('Unauthorized. Please login again.', 'error');
+                } else if (response.status === 404) {
+                    showToast('Receipt not found.', 'error');
+                } else {
+                    showToast('Failed to download receipt. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error downloading receipt:', error);
+                showToast('Error downloading receipt. Please contact support.', 'error');
+            } finally {
+                // Re-enable button and restore text
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = '📥 Download Receipt';
+                }
+            }
+        }
+        
+        // Load Fees
+        async function loadFees() {
+            const loadingDiv = document.getElementById('feeLoading');
+            const tableDiv = document.getElementById('feeTable');
+            
+            loadingDiv.style.display = 'block';
+            tableDiv.innerHTML = '';
+            
+            try {
+                let url = '/api/parent/fees/';
+                if (currentStudentId) {
+                    url += `?student_id=${currentStudentId}`;
+                }
+                url += (url.includes('?') ? '&' : '?') + '_=' + new Date().getTime();
+                
+                const response = await fetch(url, {
+                    headers: {'Authorization': `Token ${token}`}
+                });
+                const fees = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                
+                if (!fees || fees.length === 0) {
+                    tableDiv.innerHTML = '<div class="loading">No fee records found.</div>';
+                    return;
+                }
+                
+                fees.sort((a, b) => new Date(a.month) - new Date(b.month));
+                
+                // Calculate total overdue
+                let totalOverdue = 0;
+                fees.forEach(fee => {
+                    if (fee.status === 'overdue') {
+                        totalOverdue += parseFloat(fee.amount);
+                    }
+                });
+                document.getElementById('totalOverdueAmount').innerText = totalOverdue.toFixed(2);
+                
+                let html = '<table class="data-table"><thead><tr>' +
+                    '<th>Month</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Receipt</th>' +
+                    '</tr></thead><tbody>';
+                
+                fees.forEach(fee => {
+                    let statusClass = '';
+                    let statusText = '';
+                    if (fee.status === 'paid') {
+                        statusClass = 'status-paid';
+                        statusText = 'PAID';
+                    } else if (fee.status === 'pending') {
+                        statusClass = 'status-pending';
+                        statusText = 'PENDING';
+                    } else if (fee.status === 'overdue') {
+                        statusClass = 'status-overdue';
+                        statusText = 'OVERDUE';
+                    }
+                    
+                    let monthDisplay = fee.month;
+                    if (fee.month) {
+                        const date = new Date(fee.month);
+                        monthDisplay = date.toLocaleDateString('en-MY', { year: 'numeric', month: 'short' });
+                    }
+                    
+                    let receiptButton = '';
+                    if (fee.status === 'paid') {
+                        receiptButton = `<button class="download-btn" onclick="downloadReceipt(${fee.id}, this)">📥 Download Receipt</button>`;
+                    } else {
+                        receiptButton = '<span class="no-receipt">-</span>';
+                    }
+                    
+                    html += `<tr>
+                        <td>${monthDisplay}</td>
+                        <td>RM ${parseFloat(fee.amount).toFixed(2)}</td>
+                        <td>${fee.due_date}</td>
+                        <td class="${statusClass}">${statusText}</td>
+                        <td>${receiptButton}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                tableDiv.innerHTML = html;
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                tableDiv.innerHTML = '<div class="loading" style="color:#dc2626;">Error loading fees</div>';
+                console.error('Error loading fees:', error);
+            }
+        }
+        
+        // Load Attendance
+        async function loadAttendance() {
+            const loadingDiv = document.getElementById('attendanceLoading');
+            const tableDiv = document.getElementById('attendanceTable');
+            
+            loadingDiv.style.display = 'block';
+            tableDiv.innerHTML = '';
+            
+            try {
+                let url = '/api/parent/attendance/';
+                if (currentStudentId) {
+                    url += `?student_id=${currentStudentId}`;
+                }
+                url += (url.includes('?') ? '&' : '?') + '_=' + new Date().getTime();
+                
+                const response = await fetch(url, {
+                    headers: {'Authorization': `Token ${token}`}
+                });
+                const data = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                
+                // Update stats
+                if (data.stats) {
+                    document.getElementById('totalPresent').textContent = data.stats.total_present || 0;
+                    document.getElementById('totalAbsent').textContent = data.stats.total_absent || 0;
+                    document.getElementById('attendanceRate').textContent = (data.stats.attendance_rate || 0) + '%';
+                }
+                
+                if (!data.attendance || data.attendance.length === 0) {
+                    tableDiv.innerHTML = '<div class="loading">No attendance records found.</div>';
+                    return;
+                }
+                
+                let html = '<table class="data-table"><thead><tr>' +
+                    '<th>Date</th><th>Class Type</th><th>Instructor</th><th>Status</th>' +
+                    '</thead><tbody>';
+                
+                data.attendance.forEach(record => {
+                    let statusBadge = record.is_present ? 
+                        '<span class="present-badge">✓ Present</span>' : 
+                        '<span class="absent-badge">✗ Absent</span>';
+                    
+                    html += `<tr>
+                        <td>${record.date}</td>
+                        <td>${record.class_type || 'Regular Class'}</td>
+                        <td>${record.instructor || '-'}</td>
+                        <td>${statusBadge}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                tableDiv.innerHTML = html;
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                tableDiv.innerHTML = '<div class="loading" style="color:#dc2626;">Error loading attendance</div>';
+                console.error('Error loading attendance:', error);
+            }
+        }
+        
+        function logout() {
+            window.location.href = '/';
+        }
+        
+        // Load fees when page loads
+        loadFees();
+    </script>
+</body>
+</html>

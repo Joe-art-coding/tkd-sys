@@ -1,118 +1,605 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Taiping Taekwondo Club</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_authenticated and current_club %}{{ current_club.name }}{% else %}Taekwondo Management System{% endif %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #0284c7 100%);
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBg 20s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes moveBg {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
             text-align: center;
-            color: white;
+            padding: 2rem;
+            position: relative;
         }
-        
+
+        .hero-content {
+            max-width: 900px;
+            animation: fadeInUp 1s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .logo {
-            margin-bottom: 30px;
-        }
-        
-        .logo img {
-            width: 100px;
-            height: 100px;
+            width: 130px;
+            height: 130px;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
             border-radius: 50%;
-            background: white;
-            padding: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            font-size: 18px;
-            margin-bottom: 40px;
-            opacity: 0.9;
-        }
-        
-        .buttons {
             display: flex;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 3px solid rgba(255,255,255,0.3);
+            overflow: hidden;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #ff6a00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .belt {
+            width: 100px;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6a00, #ee0979, #ff6a00);
+            margin: 1rem auto;
+            border-radius: 3px;
+            animation: beltGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes beltGlow {
+            0%, 100% { opacity: 0.5; width: 80px; }
+            50% { opacity: 1; width: 120px; }
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            margin-bottom: 3rem;
+            opacity: 0.7;
+        }
+
+        .welcome-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-links {
+            display: flex;
+            gap: 1.5rem;
             justify-content: center;
             flex-wrap: wrap;
+            margin: 2rem 0;
         }
-        
-        .btn {
-            padding: 12px 30px;
-            background: white;
-            color: #1e293b;
+
+        .dashboard-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            width: 200px;
+            text-align: center;
             text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: #3b82f6;
             color: white;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
         }
-        
-        .btn-primary:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.2);
+            border-color: #ff6a00;
         }
-        
-        .btn-outline {
-            background: transparent;
-            border: 2px solid white;
-            color: white;
+
+        .dashboard-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
         }
-        
-        .btn-outline:hover {
-            background: white;
-            color: #1e293b;
-            transform: translateY(-2px);
+
+        .dashboard-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
         }
-        
-        .footer {
-            margin-top: 50px;
+
+        .dashboard-card p {
+            font-size: 0.8rem;
             opacity: 0.7;
-            font-size: 12px;
+        }
+
+        .logout-btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .login-cards {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 3rem 0;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 280px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-btn {
+            display: inline-block;
+            padding: 0.7rem 1.8rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .card-btn-admin {
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+        }
+
+        .card-btn-parent {
+            background: transparent;
+            border: 2px solid #ff6a00;
+            color: #ff6a00;
+        }
+
+        .card-btn-parent:hover {
+            background: #ff6a00;
+            color: white;
+        }
+
+        .card-btn-admin:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255,106,0,0.4);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e1e2f, #2a2a3a);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            border: 1px solid rgba(255,106,0,0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #fff;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #ff6a00;
+        }
+
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff6a00;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #ff6a00, #ee0979);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,106,0,0.4);
+        }
+
+        .error-message {
+            color: #ff6a6a;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            opacity: 0.6;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .tagline {
+                font-size: 1rem;
+            }
+            .login-cards {
+                gap: 1rem;
+            }
+            .card {
+                width: 240px;
+                padding: 1.5rem;
+            }
+            .welcome-title {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="bg-animation"></div>
+
+<div class="hero">
+    <div class="hero-content">
+        <!-- ERROR MESSAGE FOR ADMIN LOGIN -->
+        {% if request.GET.error == 'invalid_credentials' %}
+        <div style="background: rgba(255,68,68,0.2); border: 1px solid #ff4444; border-radius: 10px; padding: 10px; margin-bottom: 20px; color: #ff8888;">
+            ❌ Invalid username or password. Please try again.
+        </div>
+        {% endif %}
+        
+        <!-- ERROR MESSAGE FOR PARENT LOGIN -->
+        {% if request.GET.error == 'invalid_password' or request.GET.error == 'student_not_found' or request.GET.error == 'parent_not_found' %}
+        <div style="background: rgba(255,68,68,0.2); border: 1px solid #ff4444; border-radius: 10px; padding: 10px; margin-bottom: 20px; color: #ff8888;">
+            ❌ Invalid IC number or password. Please try again or contact your coach.
+        </div>
+        {% endif %}
+        
+        {% if is_authenticated %}
         <div class="logo">
             {% load static %}
-            <img src="{% static 'images/logo.png' %}" alt="Taiping Taekwondo Club">
+            {% if current_club.logo %}
+                <img src="{{ current_club.logo.url }}" alt="{{ current_club.name }}">
+            {% else %}
+                <img src="{% static 'images/logo.png' %}" alt="{{ current_club.name|default:'Taekwondo Club' }}">
+            {% endif %}
         </div>
-        <h1>Taiping Taekwondo Club</h1>
-        <div class="subtitle">Management System</div>
-        
-        <div class="buttons">
-            <a href="/admin/" class="btn btn-primary">Admin Login</a>
-            <a href="/parent/" class="btn btn-outline">Parent Portal</a>
-        </div>
-        
+        <h1>{{ current_club.name|default:'Taekwondo Club' }}</h1>
+        <div class="belt"></div>
+        <div class="tagline">태권도 • Taekwondo • 跆拳道</div>
+        <div class="subtitle">"The Way of the Foot and Fist"</div>
+        {% endif %}
+
+        {% if is_authenticated %}
+            <div class="welcome-section">
+                <div class="welcome-title">🥋 Welcome, {{ user.username }}!</div>
+                <div class="welcome-subtitle">
+    You are logged in as a 
+    {% if user.profile.role == 'super_admin' %}
+        Super Administrator
+    {% elif user.profile.role == 'club_admin' %}
+        Club Administrator
+    {% elif user.profile.role == 'coach' %}
+        Coach
+    {% elif user.profile.role == 'assistant_coach' %}
+        Assistant Coach
+    {% else %}
+        Staff
+    {% endif %}
+</div>
+
+                <div class="dashboard-links">
+                    <a href="/admin/" class="dashboard-card">
+                        <div class="dashboard-icon">⚙️</div>
+                        <h4>Admin Panel</h4>
+                        <p>Manage system settings</p>
+                    </a>
+                    <a href="/dashboard/" class="dashboard-card">
+                        <div class="dashboard-icon">📊</div>
+                        <h4>Dashboard</h4>
+                        <p>View statistics & reports</p>
+                    </a>
+                    <a href="http://127.0.0.1:8000/fees/?refresh=1" class="dashboard-card">
+                        <div class="dashboard-icon">💰</div>
+                        <h4>Fees</h4>
+                        <p>Manage student fees</p>
+                    </a>
+                    <a href="/attendance/take/" class="dashboard-card">
+                        <div class="dashboard-icon">📝</div>
+                        <h4>Attendance</h4>
+                        <p>Mark student attendance</p>
+                    </a>
+                </div>
+
+                <a href="/admin/logout/" class="logout-btn">🚪 Logout</a>
+            </div>
+        {% else %}
+            <div class="login-cards">
+                <div class="card" onclick="openAdminModal()">
+                    <div class="card-icon">🥋</div>
+                    <h3>Admin / Coach</h3>
+                    <p>Login to manage students, fees, attendance and school operations</p>
+                    <button class="card-btn card-btn-admin">Login as Admin</button>
+                </div>
+
+                <div class="card" onclick="openParentModal()">
+                    <div class="card-icon">👨‍👩‍👧</div>
+                    <h3>Parent Portal</h3>
+                    <p>Check your child's attendance, fee status and belt progress</p>
+                    <button class="card-btn card-btn-parent">Parent Login</button>
+                </div>
+            </div>
+        {% endif %}
+
         <div class="footer">
-            © 2025 Taiping Taekwondo Club | All Rights Reserved
+            {% if is_authenticated and current_club %}
+                © {% now "Y" %} {{ current_club.name }} | All Rights Reserved | "Excellence Through Discipline"
+            {% else %}
+                © {% now "Y" %} Taekwondo Management System | All Rights Reserved
+            {% endif %}
         </div>
     </div>
+</div>
+
+    {% if not is_authenticated %}
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAdminModal()">&times;</span>
+            <h2>🥋 Admin / Coach Login</h2>
+            <form action="/admin/login/?next=/" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="parentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeParentModal()">&times;</span>
+            <h2>👨‍👩‍👧 Parent Portal</h2>
+            <form method="get" action="/parent/">
+                <div class="form-group">
+                    <label>Student IC Number</label>
+                    <input type="text" name="ic" placeholder="Enter student IC number" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="submit-btn">Access Portal</button>
+            </form>
+            <div class="error-message" style="margin-top: 1rem;">
+                * For first time access, please contact your coach
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.add('active');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.remove('active');
+        }
+
+        function openParentModal() {
+            document.getElementById('parentModal').classList.add('active');
+        }
+
+        function closeParentModal() {
+            document.getElementById('parentModal').classList.remove('active');
+        }
+
+        window.onclick = function(event) {
+            const adminModal = document.getElementById('adminModal');
+            const parentModal = document.getElementById('parentModal');
+            if (event.target === adminModal) {
+                closeAdminModal();
+            }
+            if (event.target === parentModal) {
+                closeParentModal();
+            }
+        }
+    </script>
+    {% endif %}
 </body>
 </html>

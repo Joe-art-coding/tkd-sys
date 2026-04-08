@@ -1,6 +1,11 @@
 from django.db import models
-from schools.models import School
+from schools.models import School, Club  # Import Club from schools app
 from django.utils import timezone
+from django.contrib.auth.models import User
+
+
+# REMOVED: Duplicate Club class (now imported from schools.models)
+
 
 class Student(models.Model):
     BELT_CHOICES = [
@@ -29,15 +34,21 @@ class Student(models.Model):
         ('F', 'Female'),
     ]
     
-    # School (each student belongs to one school)
+    # Multi-club support (now using Club from schools app)
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='students', null=True, blank=True)
+    
+    # School (each student belongs to one school within their club)
     school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='students')
     
     # Personal Info
-    student_id = models.CharField(max_length=20, unique=True)
+    student_id = models.CharField(max_length=20, unique=True, blank=True)
     name = models.CharField(max_length=100)
     ic_number = models.CharField(max_length=12, unique=True)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    
+    # Parent Info
+    parent_ic = models.CharField(max_length=12, blank=True, help_text="Parent IC number for auto-create parent account")
     
     # Taekwondo Info
     belt_rank = models.CharField(max_length=20, choices=BELT_CHOICES, default='white')
@@ -59,11 +70,47 @@ class Student(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def save(self, *args, **kwargs):
+        # Auto-generate student_id with club prefix
+        if not self.student_id:
+            import datetime
+            year = datetime.datetime.now().strftime('%Y')
+            # Use club subdomain prefix instead of hardcoded 'TTC'
+            prefix = self.club.subdomain.upper() if self.club else 'CLUB'
+            last_student = Student.objects.filter(
+                student_id__startswith=f'{prefix}{year}'
+            ).order_by('-student_id').first()
+            if last_student:
+                last_num = int(last_student.student_id[-3:])
+                new_num = last_num + 1
+            else:
+                new_num = 1
+            self.student_id = f'{prefix}{year}{new_num:03d}'
+        
         # Check if this is a new student (no primary key yet)
         is_new = self.pk is None
         
         # First save the student
         super().save(*args, **kwargs)
+        
+        # Auto-create parent if parent_ic is provided and this is a new student
+        if is_new and self.parent_ic:
+            from .models import Parent
+            
+            # Create or get user for parent (include club in username for uniqueness across clubs)
+            username = f"parent_{self.club.subdomain}_{self.parent_ic}" if self.club else f"parent_{self.parent_ic}"
+            user, created = User.objects.get_or_create(
+                username=username,
+                defaults={'email': f"{username}@example.com"}
+            )
+            if created:
+                user.set_password('user123456')
+                user.save()
+            
+            # Create parent record
+            parent, created = Parent.objects.get_or_create(
+                user=user,
+                student=self
+            )
         
         # Generate fees for current year if this is a new student
         if is_new:
@@ -74,7 +121,6 @@ class Student(models.Model):
             today = date.today()
             current_year = today.year
             
-            # Generate Jan to Dec of current year
             for month in range(1, 13):
                 first_day = date(current_year, month, 1)
                 due_date = first_day + relativedelta(months=1)
@@ -89,30 +135,20 @@ class Student(models.Model):
                 )
     
     def __str__(self):
-        return f"{self.name} - {self.school.name}"
-        
-        
-from django.contrib.auth.models import User
+        club_name = self.club.name if self.club else 'No Club'
+        return f"{self.name} - {club_name} - {self.school.name} - {self.student_id}"
+
 
 class Parent(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='parent_profile')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='parent_profiles')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='parents')
     phone = models.CharField(max_length=15, blank=True)
     relationship = models.CharField(max_length=50, default='Parent')
     created_at = models.DateTimeField(auto_now_add=True)
     
-    def __str__(self):
-        return f"{self.user.username} - {self.student.name}"
-
-
-from django.contrib.auth.models import User
-
-class Parent(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='parent_profile')
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='parents')
-    phone = models.CharField(max_length=15, blank=True)
-    relationship = models.CharField(max_length=50, default='Parent')
-    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('user', 'student')
     
     def __str__(self):
         return f"{self.user.username} - {self.student.name}"
+        

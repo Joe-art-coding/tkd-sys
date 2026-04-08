@@ -399,5 +399,17 @@
         if (e.key === 'Enter') login();
     });
     </script>
+	<script>
+    // Auto login if IC and password are in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const icFromUrl = urlParams.get('ic');
+    const passwordFromUrl = urlParams.get('password');
+    
+    if (icFromUrl && passwordFromUrl) {
+        document.getElementById('icNumber').value = icFromUrl;
+        document.getElementById('password').value = passwordFromUrl;
+        login();
+    }
+</script>
 </body>
 </html>

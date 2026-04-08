@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-bwd8x)vy7@2!76qyhix!j&m2qlfr7(h#botjv#9fz)co)k&z%y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.179', '127.0.0.1', 'localhost', '.onrender.com']
+ALLOWED_HOSTS = ['192.168.0.179', '127.0.0.1', 'localhost', '.onrender.com', 'testserver']
 
 
 # Application definition
@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'taekwondo_system.middleware.ClubMiddleware',
 ]
 
 ROOT_URLCONF = 'taekwondo_system.urls'
@@ -68,6 +69,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'taekwondo_system.context_processors.club_processor',
             ],
         },
     },
@@ -99,7 +101,7 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'taekwondo_db',
             'USER': 'root',
-            'PASSWORD': 'root123',  # your MySQL password if any
+            'PASSWORD': 'root123',
             'HOST': 'localhost',
             'PORT': '3306',
         }

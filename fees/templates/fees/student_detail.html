@@ -1,0 +1,66 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div style="padding: 20px;">
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'fee_student_list' %}" style="color: #79aec8; text-decoration: none;">← Back to Student List</a>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <h2>{{ student.name }}</h2>
+        <p><strong>IC:</strong> {{ student.ic_number }}</p>
+        <p><strong>School:</strong> {{ student.school.name }}</p>
+        <p><strong>Belt:</strong> {{ student.get_belt_rank_display }}</p>
+    </div>
+    
+    <h3>Fee History</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #79aec8; color: white;">
+                <th style="padding: 10px; text-align: left;">Month</th>
+                <th style="padding: 10px; text-align: left;">Fee Type</th>
+                <th style="padding: 10px; text-align: left;">Amount</th>
+                <th style="padding: 10px; text-align: left;">Due Date</th>
+                <th style="padding: 10px; text-align: left;">Status</th>
+                <th style="padding: 10px; text-align: left;">Paid Date</th>
+                <th style="padding: 10px; text-align: left;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fee in fees %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;">{{ fee.month|date:"F Y"|default:"-" }}</td>
+                <td style="padding: 10px;">{{ fee.get_fee_type_display }}</td>
+                <td style="padding: 10px;">RM {{ fee.amount }}</td>
+                <td style="padding: 10px;">{{ fee.due_date }}</td>
+                <td style="padding: 10px;">
+                    <span style="
+                        {% if fee.status == 'paid' %}color: green; font-weight: bold;
+                        {% elif fee.status == 'overdue' %}color: red; font-weight: bold;
+                        {% else %}color: orange; font-weight: bold;
+                        {% endif %}">
+                        {{ fee.status|upper }}
+                    </span>
+                </td>
+                <td style="padding: 10px;">{{ fee.paid_date|default:"-" }}</td>
+                <td style="padding: 10px;">
+                    {% if fee.status != 'paid' %}
+                    <form method="post" action="{% url 'fee_mark_paid' fee.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                            💰 Mark as Paid
+                        </button>
+                    </form>
+                    {% else %}
+                    <span style="color: green;">✓ Paid</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="padding: 20px; text-align: center;">No fee records found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,16 +1,22 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}{{ title }} | Taiping Taekwondo Club{% endblock %}
+{% block title %}{% if user.is_authenticated %}{{ title }} | {{ current_club.name|default:'Taekwondo Club' }}{% else %}Login{% endif %}{% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
 <style>
+    /* Hide header when not logged in */
+    {% if not user.is_authenticated %}
+    #header {
+        display: none !important;
+    }
+    {% endif %}
+    
     /* Soft, calming color scheme */
     :root {
-        --primary-color: #3b82f6;
-        --primary-soft: #60a5fa;
-        --primary-light: #eff6ff;
+        --primary-color: {% if user.is_authenticated %}{{ current_club.primary_color|default:'#3b82f6' }}{% else %}#3b82f6{% endif %};
+        --primary-soft: {% if user.is_authenticated %}{{ current_club.secondary_color|default:'#60a5fa' }}{% else %}#60a5fa{% endif %};
         --secondary-color: #06b6d4;
         --secondary-soft: #22d3ee;
         --bg-main: #f8fafc;
@@ -26,9 +32,8 @@
         color: var(--text-main);
     }
     
-    /* Header styling - Navy blue to teal gradient */
     #header {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #0284c7 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-soft) 50%, var(--secondary-color) 100%);
         border-bottom: none;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         padding: 12px 20px;
@@ -45,9 +50,8 @@
         opacity: 0.9;
     }
     
-    /* Module headers */
     .module h2, .module caption, .inline-group h2 {
-        background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         color: white;
         border-radius: 8px;
         padding: 10px 12px;
@@ -56,7 +60,6 @@
         font-size: 14px;
     }
     
-    /* Table headers */
     table thead th {
         background: #f1f5f9;
         color: var(--text-main);
@@ -65,14 +68,12 @@
         font-size: 13px;
     }
     
-    /* Table cells */
     td, th {
         color: var(--text-main);
     }
     
-    /* Buttons */
     .button, input[type=submit], input[type=button], .submit-row input, a.button {
-        background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         border: none;
         border-radius: 6px;
         padding: 8px 16px;
@@ -82,12 +83,12 @@
     }
     
     .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
-        background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        opacity: 0.9;
         color: white;
         transform: translateY(-1px);
     }
     
-    /* Object tools */
     .object-tools a {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         border-radius: 6px;
@@ -100,7 +101,6 @@
         color: white;
     }
     
-    /* Dashboard modules */
     .module {
         background: var(--card-bg);
         border-radius: 12px;
@@ -110,7 +110,6 @@
         border: 1px solid var(--border-light);
     }
     
-    /* Sidebar */
     #nav-sidebar {
         background: var(--sidebar-bg);
         border-radius: 12px;
@@ -118,19 +117,17 @@
         border: 1px solid var(--border-light);
     }
     
-    /* Links */
     a:link, a:visited {
-        color: #3b82f6;
+        color: var(--primary-color);
         text-decoration: none;
         font-weight: 500;
     }
     
     a:hover {
-        color: #06b6d4;
+        color: var(--secondary-color);
         text-decoration: underline;
     }
     
-    /* Breadcrumbs */
     div.breadcrumbs {
         background: #ffffff;
         border-bottom: 1px solid var(--border-light);
@@ -139,10 +136,9 @@
     }
     
     div.breadcrumbs a {
-        color: #3b82f6;
+        color: var(--primary-color);
     }
     
-    /* Form fields */
     input, textarea, select {
         border: 1px solid var(--border-light);
         border-radius: 6px;
@@ -152,12 +148,11 @@
     }
     
     input:focus, textarea:focus, select:focus {
-        border-color: #3b82f6;
+        border-color: var(--primary-color);
         outline: none;
         box-shadow: 0 0 0 2px #dbeafe;
     }
     
-    /* Messaging */
     .success {
         background: #ecfdf5;
         color: #065f46;
@@ -167,7 +162,7 @@
     .info {
         background: #eff6ff;
         color: #1e40af;
-        border-left-color: #3b82f6;
+        border-left-color: var(--primary-color);
     }
     
     .warning {
@@ -182,14 +177,12 @@
         border-left-color: #ef4444;
     }
     
-    /* Change list */
     #changelist .actions {
         background: #f8fafc;
         border-radius: 8px;
         border: 1px solid var(--border-light);
     }
     
-    /* Pagination */
     .paginator {
         background: #f8fafc;
         border-radius: 8px;
@@ -199,15 +192,13 @@
     }
     
     .paginator a:link, .paginator a:visited {
-        color: #3b82f6;
+        color: var(--primary-color);
     }
     
-    /* Dashboard titles */
     h1, h2, h3, h4 {
         color: var(--text-main);
     }
     
-    /* Calendar and time widgets */
     .calendarbox, .clockbox {
         background: white;
         border: 1px solid var(--border-light);
@@ -215,23 +206,200 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
-    /* Darken the text in widgets */
     .calendarbox th, .calendarbox td {
         color: var(--text-main);
     }
+    
+    .club-switcher {
+        margin-right: 20px;
+    }
+    
+    .club-switcher select {
+        padding: 6px 12px;
+        border-radius: 6px;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        cursor: pointer;
+        font-size: 13px;
+    }
+    
+    .club-switcher select option {
+        color: #333;
+        background: white;
+    }
+    
+    .club-switcher select:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+	
+/* Navbar user tools styling - PADDING KECIL */
+#user-tools {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    background: rgba(255,255,255,0.15);
+    padding: 2px 10px !important;  /* Kecilkan padding */
+    border-radius: 30px;
+    backdrop-filter: blur(5px);
+    float: right !important;
+    text-align: right;
+    margin: 0 !important;
+}
+
+/* Navbar hover effect */
+#user-tools a {
+    color: white;
+    text-decoration: none;
+    padding: 1px 10px !important;  /* Kecilkan padding link */
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+}
+
+#user-tools a:hover {
+    background: #10b981;
+    color: white;
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+#user-tools strong {
+    font-weight: 600;
+    color: #ffd700;
+    font-size: 14px;
+}
+
+/* Dashboard & Take Attendance Buttons - Bulat & Cantik */
+.dashboard-btn, .attendance-btn {
+    border-radius: 40px !important;
+    padding: 8px 20px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.dashboard-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.dashboard-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(16,185,129,0.3) !important;
+}
+
+.attendance-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+}
+
+.attendance-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(59,130,246,0.3) !important;
+}
+
+/* Header Buttons */
+.header-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-dashboard, .btn-attendance, .btn-settings {
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-dashboard {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-dashboard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(16,185,129,0.4);
+    color: white;
+}
+
+.btn-attendance {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.btn-attendance:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(59,130,246,0.4);
+    color: white;
+}
+
+.btn-settings {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    color: white;
+}
+
+.btn-settings:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(139,92,246,0.4);
+    color: white;
+}
+
 </style>
 {% endblock %}
 
 {% block branding %}
-<div style="display: flex; align-items: center;">
-    <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 35px; width: auto; border-radius: 50%; margin-right: 12px; background: white; padding: 2px;">
-    <h1 id="site-name"><a href="{% url 'admin:index' %}" style="font-weight: 600;">Taiping Taekwondo Club</a></h1>
+<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center;">
+        {% if current_club.logo %}
+            <img src="{{ current_club.logo.url }}" alt="{{ current_club.name }}" style="height: 35px; width: auto; border-radius: 50%; margin-right: 12px; background: white; padding: 2px;">
+        {% else %}
+            <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 35px; width: auto; border-radius: 50%; margin-right: 12px; background: white; padding: 2px;">
+        {% endif %}
+        <h1 id="site-name"><a href="{% url 'admin:index' %}" style="font-weight: 600;">{{ current_club.name|default:'Taekwondo Club' }}</a></h1>
+    </div>
+    
+    <div class="header-right">
+        {% if user.is_superuser and all_clubs %}
+        <div class="club-switcher">
+            <form method="get" action="{% url 'switch_club' 0 %}" onchange="this.action = this.action.replace('/0/', '/' + this.querySelector('select').value + '/'); this.submit();">
+                <select name="club_id">
+                    <option value="">-- Switch Club --</option>
+                    {% for club in all_clubs %}
+                        <option value="{{ club.id }}" {% if club.id == current_club.id %}selected{% endif %}>
+                            {{ club.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+        {% endif %}
+        
+        <!-- Club Admin: Manage Coaches Button -->
+{% if user.profile.role == 'club_admin' %}
+    <a href="{% url 'manage_coaches' %}" class="btn-manage">👥 Manage Coaches</a>
+{% endif %}
+
+<a href="/dashboard/" class="btn-dashboard">📊 Dashboard</a>
+<a href="/attendance/take/" class="btn-attendance">📝 Take Attendance</a>
+
+{% if current_club and user.is_superuser %}
+    <a href="/admin/schools/club/{{ current_club.id }}/change/" class="btn-settings">⚙️ Club Settings</a>
+{% endif %}
+    </div>
 </div>
 {% endblock %}
 
 {% block nav-global %}
-<div style="float: right; margin: 10px;">
-    <a href="/dashboard/" style="background: #10b981; color: white; padding: 6px 14px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 13px;">📊 Dashboard</a>
-    <a href="/attendance/take/" style="background: #3b82f6; color: white; padding: 6px 14px; text-decoration: none; border-radius: 6px; margin-left: 8px; font-weight: 500; font-size: 13px;">📝 Take Attendance</a>
-</div>
+{# Nav content moved to branding section #}
 {% endblock %}

@@ -11,7 +11,19 @@ from datetime import datetime
 def attendance_take(request):
     """Take attendance for all students in a school on a specific date"""
     
-    schools = School.objects.filter(is_active=True)
+    # Get user's profile
+    user_profile = request.user.profile if hasattr(request.user, 'profile') else None
+    
+    # Filter schools based on user role
+    if user_profile and user_profile.role == 'super_admin':
+        schools = School.objects.filter(is_active=True)
+    elif user_profile and user_profile.role in ['coach', 'assistant_coach']:
+        # Coach/assistant coach only sees their assigned schools
+        schools = user_profile.schools.filter(is_active=True)
+    else:
+        # Fallback - no schools
+        schools = School.objects.none()
+    
     selected_school = None
     students = []
     selected_date = timezone.now().date()
@@ -35,6 +47,12 @@ def attendance_take(request):
             selected_date = timezone.now().date()
         
         if school_id:
+            # Verify coach has access to this school
+            if user_profile and user_profile.role != 'super_admin':
+                if not user_profile.schools.filter(id=school_id).exists():
+                    messages.error(request, 'You do not have access to this school.')
+                    return redirect('attendance_take')
+            
             selected_school = School.objects.get(id=school_id)
             students = Student.objects.filter(school=selected_school, is_active=True)
             selected_class = class_type
@@ -54,6 +72,12 @@ def attendance_take(request):
             class_type = request.POST.get('class_type')
             instructor_name = request.POST.get('instructor')
             present_students_list = request.POST.getlist('present')
+            
+            # Verify coach has access to this school before saving
+            if user_profile and user_profile.role != 'super_admin':
+                if not user_profile.schools.filter(id=school_id).exists():
+                    messages.error(request, 'You do not have access to this school.')
+                    return redirect('attendance_take')
             
             selected_school = School.objects.get(id=school_id)
             students = Student.objects.filter(school=selected_school, is_active=True)

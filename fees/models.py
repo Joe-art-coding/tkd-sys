@@ -26,12 +26,18 @@ class Fee(models.Model):
     due_date = models.DateField()
     paid_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
-    receipt_number = models.CharField(max_length=50, blank=True)
+    receipt_number = models.CharField(max_length=50, blank=True, null=True)  # Just remove unique=True
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def generate_receipt_number(self):
+        """Generate a unique permanent receipt number"""
+        # Using fee ID as receipt number (most stable)
+        return f"REC-{self.id:06d}"
     
     def save(self, *args, **kwargs):
-        # Auto-update status based on paid_date
+        # Update status based on paid_date
         if self.paid_date:
             self.status = 'paid'
         else:
@@ -40,7 +46,16 @@ class Fee(models.Model):
                 self.status = 'overdue'
             else:
                 self.status = 'pending'
+        
+        # Save first to get ID if it's a new record
+        is_new = self.id is None
         super().save(*args, **kwargs)
+        
+        # Generate receipt number for paid fees without one
+        if self.status == 'paid' and not self.receipt_number:
+            self.receipt_number = self.generate_receipt_number()
+            # Save again with receipt number (use update to avoid recursion)
+            self.__class__.objects.filter(id=self.id).update(receipt_number=self.receipt_number)
     
     def __str__(self):
         return f"{self.student.name} - {self.fee_type} - RM{self.amount}"
