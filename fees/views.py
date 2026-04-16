@@ -1,15 +1,24 @@
+# fees/views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.utils import timezone
 from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
-from .models import Fee
-from students.models import Student
-from schools.models import School
 
-# Import receipt utility (create this file)
+from .models import Fee
+from schools.models import School
+from .services import (
+    get_schools_for_user,
+    get_students_for_school,
+    get_all_students_for_user,
+    mark_fee_as_paid,
+    waive_fees_for_month_year,
+    get_student_fees,
+)
+from students.models import Student
+
+# Import receipt utility
 try:
     from .receipt_utils import generate_fee_receipt
 except ImportError:
@@ -18,25 +27,11 @@ except ImportError:
 
 @login_required
 def fee_school_list(request):
-    """Show list of schools for coach (filtered by their assigned schools)"""
-    
-    # Check if user has profile
-    if hasattr(request.user, 'profile'):
-        if request.user.profile.role == 'super_admin':
-            schools = School.objects.filter(is_active=True)
-        else:
-            schools = request.user.profile.schools.filter(is_active=True)
-            # Filter by current club
-            current_club = getattr(request, 'club', None)
-            if current_club:
-                schools = schools.filter(club=current_club)
-    else:
-        # Super admin or user without profile - show all schools
-        schools = School.objects.filter(is_active=True)
-    
-    context = {
-        'schools': schools,
-    }
+    """Show list of schools for coach / admin"""
+    current_club = getattr(request, 'club', None)
+    schools = get_schools_for_user(request.user, current_club)
+
+    context = {'schools': schools}
     return render(request, 'fees/school_list.html', context)
 
 
@@ -44,128 +39,93 @@ def fee_school_list(request):
 def fee_school_students(request, school_id):
     school = get_object_or_404(School, id=school_id)
 
-    # Check permission
+    # Permission check
     if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
         if school not in request.user.profile.schools.all():
             messages.error(request, 'You do not have access to this school.')
             return redirect('fee_school_list')
 
-    students = Student.objects.filter(school=school, is_active=True)
+    students = get_students_for_school(school)
 
-    context = {
-        'school': school,
-        'students': students,
-    }
+    context = {'school': school, 'students': students}
     return render(request, 'fees/school_students.html', context)
 
 
 @staff_member_required
 def fee_student_list(request):
-    """Show list of students with their latest fee status"""
-    
-    # Check if user has profile
-    if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
-        schools = request.user.profile.schools.all()
-        students = Student.objects.filter(school__in=schools, is_active=True)
-    else:
-        # Super admin or user without profile - show all students
-        students = Student.objects.filter(is_active=True)
-    
-    # Get latest fee for each student
+    """Show all students with their latest fee"""
+    students = get_all_students_for_user(request.user)
+
     student_fees = []
     for student in students:
         latest_fee = student.fees.order_by('-due_date').first()
-        student_fees.append({
-            'student': student,
-            'latest_fee': latest_fee,
-        })
-    
-    context = {
-        'student_fees': student_fees,
-    }
+        student_fees.append({'student': student, 'latest_fee': latest_fee})
+
+    context = {'student_fees': student_fees}
     return render(request, 'fees/student_list.html', context)
 
 
 @staff_member_required
 def fee_student_detail(request, student_id):
     student = get_object_or_404(Student, id=student_id)
-    
-    # Check permission
+
+    # Permission check
     if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
         if student.school not in request.user.profile.schools.all():
             return redirect('fee_student_list')
-    
-    fees = student.fees.all().order_by('due_date')
-    
-    context = {
-        'student': student,
-        'fees': fees,
-    }
+
+    fees = get_student_fees(student)
+
+    context = {'student': student, 'fees': fees}
     return render(request, 'fees/student_detail.html', context)
 
 
 @staff_member_required
 def fee_mark_paid(request, fee_id):
-    """Mark a fee as paid"""
     fee = get_object_or_404(Fee, id=fee_id)
-    
-    # Check permission
+
+    # Permission check
     if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
         if fee.student.school not in request.user.profile.schools.all():
             messages.error(request, 'You do not have permission to edit this fee.')
             return redirect('fee_student_list')
-    
-    # Mark as paid
-    fee.status = 'paid'
-    fee.paid_date = timezone.now().date()
-    fee.save()
-    
-    # Format month for message (use strftime, not template filter)
+
+    mark_fee_as_paid(fee)
+
     month_str = fee.month.strftime('%B %Y') if fee.month else "Fee"
     messages.success(request, f'Fee for {fee.student.name} - {month_str} marked as paid.')
-    
+
     return redirect('fee_student_detail', student_id=fee.student.id)
 
 
 @require_http_methods(["GET"])
 def download_receipt(request, fee_id):
-    """Download PDF receipt for a paid fee"""
-    
     fee = get_object_or_404(Fee, id=fee_id)
     student = fee.student
-    
-    # Check permission
+
+    # Permission check
     if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
         if student.school not in request.user.profile.schools.all():
             return HttpResponse("Unauthorized", status=401)
-    
-    # Check if fee is paid
+
     if fee.status != 'paid':
         messages.error(request, 'Receipt is only available for paid fees.')
         return redirect('fee_student_detail', student_id=student.id)
-    
-    # Check if receipt utility is available
+
     if generate_fee_receipt is None:
-        messages.error(request, 'Receipt generation is not configured. Please install reportlab.')
+        messages.error(request, 'Receipt generation is not configured.')
         return redirect('fee_student_detail', student_id=student.id)
-    
+
     try:
-        # Get school/club info
-        school = student.school
-        
-        # Generate PDF receipt
         pdf_buffer = generate_fee_receipt(fee, student, student.club)
-        
-        # Create HTTP response
         response = HttpResponse(pdf_buffer, content_type='application/pdf')
-        
-        # Set filename
+
         month_str = fee.month.strftime('%Y%m') if fee.month else 'receipt'
         filename = f"receipt_{student.student_id}_{month_str}.pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
+
         return response
-        
+
     except Exception as e:
         messages.error(request, f'Error generating receipt: {str(e)}')
         return redirect('fee_student_detail', student_id=student.id)
@@ -173,35 +133,31 @@ def download_receipt(request, fee_id):
 
 @require_http_methods(["GET"])
 def receipt_status(request, fee_id):
-    """Check if receipt is available for a fee (AJAX endpoint)"""
     import json
-    
     try:
         fee = Fee.objects.get(id=fee_id)
-        
-        # Check permission
+
         if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
             if fee.student.school not in request.user.profile.schools.all():
-                return HttpResponse(json.dumps({'available': False, 'error': 'Unauthorized'}), 
+                return HttpResponse(json.dumps({'available': False, 'error': 'Unauthorized'}),
                                   content_type='application/json', status=401)
-        
+
         month_str = fee.month.strftime('%B %Y') if fee.month else str(fee.month)
-        
+
         return HttpResponse(json.dumps({
             'available': fee.status == 'paid',
             'fee_id': fee.id,
             'month': month_str,
             'status': fee.status,
         }), content_type='application/json')
-        
+
     except Fee.DoesNotExist:
-        return HttpResponse(json.dumps({'available': False, 'error': 'Fee not found'}), 
+        return HttpResponse(json.dumps({'available': False, 'error': 'Fee not found'}),
                           content_type='application/json', status=404)
-                          
+
 
 @staff_member_required
 def fee_waive_bulk(request):
-    """Bulk waive fees for selected month and year"""
     if request.method == 'POST':
         month = request.POST.get('month')
         year = request.POST.get('year')
@@ -213,26 +169,16 @@ def fee_waive_bulk(request):
         try:
             month = int(month)
             year = int(year)
-
-            # Get all fees for that month/year that are not already waived
-            fees = Fee.objects.filter(
-                month__year=year,
-                month__month=month
-            ).exclude(status='waived')
-
-            count = fees.count()
+            count = waive_fees_for_month_year(month, year)
 
             if count == 0:
                 messages.warning(request, f'No pending fees found for {month}/{year}.')
             else:
-                fees.update(status='waived', paid_date=None)
                 messages.success(request, f'✅ {count} fees waived for {month}/{year}!')
 
         except ValueError:
             messages.error(request, 'Invalid month or year.')
 
-        # Redirect back to student list (simple)
         return redirect('fee_student_list')
 
-    # GET request - show confirmation page
     return render(request, 'fees/waive_fees.html')
