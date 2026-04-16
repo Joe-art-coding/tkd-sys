@@ -21,13 +21,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-bwd8x)vy7@2!76qyhix!j&m2qlfr7(h#botjv#9fz)co)k&z%y'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-bwd8x)vy7@2!76qyhix!j&m2qlfr7(h#botjv#9fz)co)k&z%y')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['192.168.0.179', '127.0.0.1', 'localhost', '.onrender.com', 'testserver']
-
+# ALLOWED HOSTS - Works for local, Render, and PythonAnywhere
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '192.168.0.179',
+    '192.168.1.*',
+    '.onrender.com',
+    '.pythonanywhere.com',  # For PythonAnywhere
+    'taekwondo.pythonanywhere.com',  # Your PythonAnywhere username
+    'testserver',
+]
 
 # Application definition
 
@@ -56,6 +65,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'taekwondo_system.middleware.ClubMiddleware',
 ]
+
+# For PythonAnywhere - Force HTTPS
+if 'pythonanywhere' in os.environ.get('HOSTNAME', ''):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 ROOT_URLCONF = 'taekwondo_system.urls'
 
@@ -92,6 +108,19 @@ if 'RENDER' in os.environ:
             'PASSWORD': os.environ.get('PGPASSWORD'),
             'HOST': os.environ.get('PGHOST'),
             'PORT': os.environ.get('PGPORT', '5432'),
+        }
+    }
+# Check if running on PythonAnywhere
+elif 'PYTHONANYWHERE_DOMAIN' in os.environ or 'pythonanywhere' in os.environ.get('HOSTNAME', ''):
+    # Production - MySQL on PythonAnywhere
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('DB_NAME', 'taekwondo_db'),
+            'USER': os.environ.get('DB_USER', 'your_username'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'your_password'),
+            'HOST': os.environ.get('DB_HOST', 'yourusername.mysql.pythonanywhere-services.com'),
+            'PORT': '3306',
         }
     }
 else:
@@ -132,11 +161,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kuala_Lumpur'  # Changed to Malaysia timezone
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -149,3 +178,29 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'students/static')]
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Login URLs (for PythonAnywhere compatibility)
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Session settings (for better tablet/phone support)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_SAVE_EVERY_REQUEST = True
+
+# CSRF settings (for PythonAnywhere)
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.pythonanywhere.com',
+    'http://*.pythonanywhere.com',
+    'https://*.onrender.com',
+    'http://192.168.0.179:8000',
+    'http://127.0.0.1:8000',
+]
+
+# For tablet access - use host header
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

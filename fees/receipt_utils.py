@@ -1,97 +1,85 @@
-# fees/receipt_utils.py
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A5
 from reportlab.pdfgen import canvas
 from io import BytesIO
 from datetime import datetime
 
 def generate_fee_receipt(fee, student, club):
-    """Generate PDF receipt for a paid fee"""
-    
     buffer = BytesIO()
     
-    # Create PDF canvas
-    p = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+    # Create PDF canvas with A5 size (half of A4)
+    p = canvas.Canvas(buffer, pagesize=A5)
+    width, height = A5  # 148mm x 210mm
     
-    # Starting Y position
-    y = height - 50
+    y = height - 40  # Adjust top margin
     
-    # Club Name
-    p.setFont("Helvetica-Bold", 18)
+    # Club Name (smaller font for A5)
+    p.setFont("Helvetica-Bold", 12)
     club_name = club.name if club else "Taekwondo Club"
-    p.drawString(50, y, club_name)
+    p.drawString(30, y, club_name)
     
     # Receipt Title
-    y -= 35
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, y, "OFFICIAL FEE RECEIPT")
+    y -= 20
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(30, y, "OFFICIAL FEE RECEIPT")
     
     # Line separator
+    y -= 10
+    p.line(30, y, width - 30, y)
+    
+    # Receipt Number and Date (smaller font)
     y -= 15
-    p.line(50, y, width - 50, y)
+    p.setFont("Helvetica", 8)
+    receipt_no = fee.receipt_number if fee.receipt_number else f"REC-{fee.id}"
+    p.drawString(30, y, f"Receipt No: {receipt_no}")
+    p.drawString(180, y, f"Date: {datetime.now().strftime('%d/%m/%Y')}")
     
-    # Receipt Number and Date
+    # Student Information
     y -= 25
-    p.setFont("Helvetica", 10)
-    receipt_no = f"REC-{fee.id}-{datetime.now().strftime('%Y%m')}"
-    p.drawString(50, y, f"Receipt No: {receipt_no}")
-    p.drawString(350, y, f"Date: {datetime.now().strftime('%d/%m/%Y')}")
+    p.setFont("Helvetica-Bold", 9)
+    p.drawString(30, y, "STUDENT INFORMATION")
     
-    # Student Information Section
-    y -= 40
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(50, y, "STUDENT INFORMATION")
+    y -= 15
+    p.setFont("Helvetica", 8)
+    p.drawString(30, y, f"Name: {student.name}")
+    p.drawString(160, y, f"Student ID: {student.student_id}")
     
-    y -= 20
-    p.setFont("Helvetica", 10)
-    p.drawString(50, y, f"Name: {student.name}")
-    p.drawString(250, y, f"Student ID: {student.student_id}")
-    
-    y -= 18
-    p.drawString(50, y, f"IC Number: {student.ic_number}")
+    y -= 12
+    p.drawString(30, y, f"IC Number: {student.ic_number}")
     
     if hasattr(student, 'belt_rank') and student.belt_rank:
-        y -= 18
-        p.drawString(50, y, f"Belt Rank: {student.belt_rank}")
+        y -= 12
+        p.drawString(30, y, f"Belt Rank: {student.belt_rank}")
     
-    # Payment Details Section
-    y -= 40
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(50, y, "PAYMENT DETAILS")
-    
-    y -= 20
-    p.setFont("Helvetica", 10)
-    
-    # Format month
-    if hasattr(fee, 'month') and fee.month:
-        month_str = fee.month.strftime('%B %Y')
-    else:
-        month_str = "Monthly Fee"
-    
-    p.drawString(50, y, f"Description: Monthly Fee - {month_str}")
-    
-    y -= 18
-    p.drawString(50, y, f"Amount: RM {float(fee.amount):.2f}")
-    
-    if hasattr(fee, 'paid_date') and fee.paid_date:
-        y -= 18
-        p.drawString(50, y, f"Payment Date: {fee.paid_date.strftime('%d/%m/%Y')}")
-    
-    # Total
-    y -= 35
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(50, y, f"TOTAL PAID: RM {float(fee.amount):.2f}")
-    
-    # Footer
-    y -= 50
-    p.setFont("Helvetica-Oblique", 8)
-    p.drawString(50, y, "This is a computer-generated receipt. No signature required.")
+    # Payment Details
+    y -= 25
+    p.setFont("Helvetica-Bold", 9)
+    p.drawString(30, y, "PAYMENT DETAILS")
     
     y -= 15
-    p.drawString(50, y, f"Generated on: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    p.setFont("Helvetica", 8)
+    month_str = fee.month.strftime('%B %Y') if hasattr(fee, 'month') and fee.month else "Monthly Fee"
+    p.drawString(30, y, f"Description: Monthly Fee - {month_str}")
     
-    # Save PDF
+    y -= 12
+    p.drawString(30, y, f"Amount: RM {float(fee.amount):.2f}")
+    
+    if hasattr(fee, 'paid_date') and fee.paid_date:
+        y -= 12
+        p.drawString(30, y, f"Payment Date: {fee.paid_date.strftime('%d/%m/%Y')}")
+    
+    # Total
+    y -= 25
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(30, y, f"TOTAL PAID: RM {float(fee.amount):.2f}")
+    
+    # Footer
+    y -= 25
+    p.setFont("Helvetica-Oblique", 6)
+    p.drawString(30, y, "This is a computer-generated receipt. No signature required.")
+    
+    y -= 10
+    p.drawString(30, y, f"Generated on: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    
     p.save()
     buffer.seek(0)
-    
     return buffer

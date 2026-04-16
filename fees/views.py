@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.http import HttpResponse
@@ -15,15 +16,59 @@ except ImportError:
     generate_fee_receipt = None
 
 
+@login_required
+def fee_school_list(request):
+    """Show list of schools for coach (filtered by their assigned schools)"""
+    
+    # Check if user has profile
+    if hasattr(request.user, 'profile'):
+        if request.user.profile.role == 'super_admin':
+            schools = School.objects.filter(is_active=True)
+        else:
+            schools = request.user.profile.schools.filter(is_active=True)
+            # Filter by current club
+            current_club = getattr(request, 'club', None)
+            if current_club:
+                schools = schools.filter(club=current_club)
+    else:
+        # Super admin or user without profile - show all schools
+        schools = School.objects.filter(is_active=True)
+    
+    context = {
+        'schools': schools,
+    }
+    return render(request, 'fees/school_list.html', context)
+
+
+@login_required
+def fee_school_students(request, school_id):
+    school = get_object_or_404(School, id=school_id)
+
+    # Check permission
+    if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
+        if school not in request.user.profile.schools.all():
+            messages.error(request, 'You do not have access to this school.')
+            return redirect('fee_school_list')
+
+    students = Student.objects.filter(school=school, is_active=True)
+
+    context = {
+        'school': school,
+        'students': students,
+    }
+    return render(request, 'fees/school_students.html', context)
+
+
 @staff_member_required
 def fee_student_list(request):
     """Show list of students with their latest fee status"""
     
-    # Filter by user's schools if not super_admin
+    # Check if user has profile
     if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
         schools = request.user.profile.schools.all()
         students = Student.objects.filter(school__in=schools, is_active=True)
     else:
+        # Super admin or user without profile - show all students
         students = Student.objects.filter(is_active=True)
     
     # Get latest fee for each student
@@ -43,8 +88,6 @@ def fee_student_list(request):
 
 @staff_member_required
 def fee_student_detail(request, student_id):
-    """Show full year fee history for a specific student"""
-    
     student = get_object_or_404(Student, id=student_id)
     
     # Check permission
@@ -111,7 +154,7 @@ def download_receipt(request, fee_id):
         school = student.school
         
         # Generate PDF receipt
-        pdf_buffer = generate_fee_receipt(fee, student, school)
+        pdf_buffer = generate_fee_receipt(fee, student, student.club)
         
         # Create HTTP response
         response = HttpResponse(pdf_buffer, content_type='application/pdf')
@@ -154,3 +197,42 @@ def receipt_status(request, fee_id):
     except Fee.DoesNotExist:
         return HttpResponse(json.dumps({'available': False, 'error': 'Fee not found'}), 
                           content_type='application/json', status=404)
+                          
+
+@staff_member_required
+def fee_waive_bulk(request):
+    """Bulk waive fees for selected month and year"""
+    if request.method == 'POST':
+        month = request.POST.get('month')
+        year = request.POST.get('year')
+
+        if not month or not year:
+            messages.error(request, 'Please select both month and year.')
+            return redirect('fee_student_list')
+
+        try:
+            month = int(month)
+            year = int(year)
+
+            # Get all fees for that month/year that are not already waived
+            fees = Fee.objects.filter(
+                month__year=year,
+                month__month=month
+            ).exclude(status='waived')
+
+            count = fees.count()
+
+            if count == 0:
+                messages.warning(request, f'No pending fees found for {month}/{year}.')
+            else:
+                fees.update(status='waived', paid_date=None)
+                messages.success(request, f'✅ {count} fees waived for {month}/{year}!')
+
+        except ValueError:
+            messages.error(request, 'Invalid month or year.')
+
+        # Redirect back to student list (simple)
+        return redirect('fee_student_list')
+
+    # GET request - show confirmation page
+    return render(request, 'fees/waive_fees.html')

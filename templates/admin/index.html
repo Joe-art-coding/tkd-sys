@@ -1,0 +1,56 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<div id="content-main" style="padding: 20px;">
+    {% if app_list %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+            {% for app in app_list %}
+                <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;">
+                    <div style="background: linear-gradient(135deg, #79aec8 0%, #417690 100%); padding: 15px 20px;">
+                        <h2 style="margin: 0; color: white; font-size: 18px;">
+                            {{ app.name }}
+                        </h2>
+                    </div>
+                    <div style="padding: 15px;">
+                        {% for model in app.models %}
+                            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" style="color: #417690; text-decoration: none; font-weight: 500;">
+                                                {{ model.name }}
+                                            </a>
+                                        {% else %}
+                                            {{ model.name }}
+                                        {% endif %}
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">➕ Add</a>
+                                        {% endif %}
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" style="background: #79aec8; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">👁️ View</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if model.view_only %}
+                                    <div style="margin-top: 5px; font-size: 11px; color: #999;">View only</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You don't have permission to view or edit anything.</p>
+    {% endif %}
+</div>
+
+<style>
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div style="padding:20px">
+    <h2>Pilih Sekolah</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px">
+        {% for school in schools %}
+        <a href="{% url 'attendance_bulk' school.id %}" style="text-decoration:none">
+            <div style="background:white; border-radius:12px; padding:20px; text-align:center; border:1px solid #ddd">
+                🥋 <h3>{{ school.name }}</h3>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

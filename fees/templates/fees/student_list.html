@@ -1,8 +1,16 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
 <div style="padding: 20px;">
-    <h1>Student Fees</h1>
-    <p>Click on a student to view their full fee history</p>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h1 style="margin: 0;">Student Fees</h1>
+            <p style="margin: 5px 0 0 0;">Click on a student to view their full fee history</p>
+        </div>
+        <a href="{% url 'fee_waive_bulk' %}" 
+           style="background: #dc3545; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+            🏷️ Waive Fees (Bulk)
+        </a>
+    </div>
     
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>

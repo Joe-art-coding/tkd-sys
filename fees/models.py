@@ -17,6 +17,7 @@ class Fee(models.Model):
         ('pending', 'Pending'),
         ('paid', 'Paid'),
         ('overdue', 'Overdue'),
+        ('waive', 'Waived'),
     ]
     
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='fees')
@@ -26,26 +27,27 @@ class Fee(models.Model):
     due_date = models.DateField()
     paid_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
-    receipt_number = models.CharField(max_length=50, blank=True, null=True)  # Just remove unique=True
+    receipt_number = models.CharField(max_length=50, blank=True, null=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def generate_receipt_number(self):
         """Generate a unique permanent receipt number"""
-        # Using fee ID as receipt number (most stable)
         return f"REC-{self.id:06d}"
     
     def save(self, *args, **kwargs):
-        # Update status based on paid_date
-        if self.paid_date:
-            self.status = 'paid'
-        else:
-            # Check if overdue
-            if self.due_date and self.due_date < date.today():
-                self.status = 'overdue'
+        # Don't override if status is 'waive'
+        if self.status != 'waive':
+            # Update status based on paid_date
+            if self.paid_date:
+                self.status = 'paid'
             else:
-                self.status = 'pending'
+                # Check if overdue
+                if self.due_date and self.due_date < date.today():
+                    self.status = 'overdue'
+                else:
+                    self.status = 'pending'
         
         # Save first to get ID if it's a new record
         is_new = self.id is None

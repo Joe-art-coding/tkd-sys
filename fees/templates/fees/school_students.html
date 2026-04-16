@@ -1,0 +1,136 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<style>
+    .clickable-row {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .clickable-row:hover {
+        background-color: #e3f2fd !important;
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .clickable-row:hover td:first-child {
+        border-left: 3px solid #79aec8;
+    }
+    
+    /* Belt badge styles with colors */
+    .belt-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        display: inline-block;
+        font-weight: bold;
+    }
+    
+    .belt-white { background: #f5f5f5; color: #555; border: 1px solid #ddd; }
+    .belt-yellow { background: #fff3cd; color: #856404; }
+    .belt-yellow1 { background: #FFFF00 ; color: #856404; }
+    .belt-yellow2 { background: #FFA500; color: #664d03; }
+    .belt-orange { background: #ffe0b3; color: #cc7000; }
+    .belt-green { background: #90EE90; color: #155724; }
+    .belt-green1 { background: #90EE90; color: #155724; }
+    .belt-green2 { background: #006400; color: white; }
+    .belt-blue { background: #ADD8E6; color: #004085; }
+    .belt-blue1 { background: #ADD8E6; color: #004085; }
+    .belt-blue2 { background: #00008B; color: white; }
+    .belt-brown { background: #d2b48c; color: #4a2c00; }
+    .belt-red { background: #FF474C; color: #721c24; }
+    .belt-red1 { background: #FF474C; color: #721c24; }
+    .belt-red2 { background: #8B0000; color: white; }
+    .belt-poom { background: linear-gradient(135deg, #343a40 50%, #dc3545 50%); color: white; }
+    .belt-black { background: #343a40; color: white; }
+    .belt-default { background: #f0f0f0; color: #333; }
+    
+    .view-fees-btn {
+        transition: all 0.2s ease;
+    }
+    
+    .clickable-row:hover .view-fees-btn {
+        background-color: #0056b3 !important;
+        transform: scale(1.05);
+    }
+</style>
+
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <a href="{% url 'fee_school_list' %}" style="color: #79aec8; text-decoration: none;">← Back to Schools</a>
+            <h2 style="margin: 10px 0 0 0;">{{ school.name }} - Students</h2>
+        </div>
+        <a href="{% url 'fee_waive_bulk' %}" 
+           style="background: #dc3545; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+            🏷️ Waive Fees (Bulk)
+        </a>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+            <tr style="background: #79aec8; color: white;">
+                <th style="padding: 10px; text-align: left;">Student Name</th>
+                <th style="padding: 10px; text-align: left;">IC Number</th>
+                <th style="padding: 10px; text-align: left;">Belt</th>
+                <th style="padding: 10px; text-align: left;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr class="clickable-row" data-url="{% url 'fee_student_detail' student.id %}" 
+                style="border-bottom: 1px solid #eee; background-color: {% cycle '#ffffff' '#f9f9f9' %};">
+                <td style="padding: 10px; font-weight: 500;">{{ student.name }}</td>
+                <td style="padding: 10px;">{{ student.ic_number }}</td>
+                <td style="padding: 10px;">
+                    <span class="belt-badge 
+                        {% if 'White' in student.get_belt_rank_display %}belt-white
+                        {% elif 'Yellow 1' in student.get_belt_rank_display %}belt-yellow1
+                        {% elif 'Yellow 2' in student.get_belt_rank_display %}belt-yellow2
+                        {% elif 'Yellow' in student.get_belt_rank_display %}belt-yellow
+                        {% elif 'Orange' in student.get_belt_rank_display %}belt-orange
+                        {% elif 'Green 1' in student.get_belt_rank_display %}belt-green1
+                        {% elif 'Green 2' in student.get_belt_rank_display %}belt-green2
+                        {% elif 'Green' in student.get_belt_rank_display %}belt-green
+                        {% elif 'Blue 1' in student.get_belt_rank_display %}belt-blue1
+                        {% elif 'Blue 2' in student.get_belt_rank_display %}belt-blue2
+                        {% elif 'Blue' in student.get_belt_rank_display %}belt-blue
+                        {% elif 'Brown' in student.get_belt_rank_display %}belt-brown
+                        {% elif 'Red 1' in student.get_belt_rank_display %}belt-red1
+                        {% elif 'Red 2' in student.get_belt_rank_display %}belt-red2
+                        {% elif 'Red' in student.get_belt_rank_display %}belt-red
+                        {% elif 'Poom' in student.get_belt_rank_display %}belt-poom
+                        {% elif 'Black' in student.get_belt_rank_display %}belt-black
+                        {% else %}belt-default
+                        {% endif %}">
+                        🥋 {{ student.get_belt_rank_display }}
+                    </span>
+                </td>
+                <td style="padding: 10px;">
+                    <a href="{% url 'fee_student_detail' student.id %}" class="view-fees-btn" 
+                       style="background: #79aec8; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; display: inline-block;">
+                        View Fees
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="padding: 20px; text-align: center;">No students in this school.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Make whole row clickable
+    document.querySelectorAll('.clickable-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Don't trigger if clicking on the button (prevent double trigger)
+            if (e.target.tagName !== 'A' && !e.target.closest('a')) {
+                window.location.href = this.dataset.url;
+            }
+        });
+    });
+</script>
+{% endblock %}

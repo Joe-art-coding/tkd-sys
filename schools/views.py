@@ -4,7 +4,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Club, UserProfile, School
+from .models import Club, UserProfile, School, ContactInfo  # Added ContactInfo
 
 
 # ==================== CLUB SWITCHER (SUPER ADMIN ONLY) ====================
@@ -306,3 +306,151 @@ def assign_coaches(request):
         'club': club,
     }
     return render(request, 'schools/assign_coaches.html', context)
+
+
+# ==================== CLUB ADMIN - MANAGE CONTACTS ====================
+
+@login_required
+@user_passes_test(is_club_admin)
+def manage_contacts(request):
+    """Club Admin can manage contact information for their club"""
+    club = request.user.profile.club
+    
+    if not club:
+        messages.error(request, 'You are not assigned to any club.')
+        return redirect('/admin/')
+    
+    # Get all users from this club (coaches, admins) for dropdown
+    from django.contrib.auth.models import User
+    club_users = User.objects.filter(
+        profile__club=club,
+        profile__role__in=['club_admin', 'coach', 'assistant_coach']
+    ).select_related('profile')
+    
+    # Get all contacts for this club
+    contacts = ContactInfo.objects.filter(club=club).order_by('-is_emergency', 'name')
+    
+    context = {
+        'contacts': contacts,
+        'club': club,
+        'club_users': club_users,
+    }
+    return render(request, 'schools/manage_contacts.html', context)
+
+
+@login_required
+@user_passes_test(is_club_admin)
+def add_contact(request):
+    """Club Admin can add new contact information"""
+    club = request.user.profile.club
+    
+    if request.method == 'POST':
+        # Try to get from user selection first
+        user_id = request.POST.get('user_id')
+        
+        if user_id and user_id != '':
+            # Get from existing user
+            from django.contrib.auth.models import User
+            try:
+                selected_user = User.objects.get(id=user_id)
+                name = selected_user.get_full_name() or selected_user.username
+                role = selected_user.profile.get_role_display()
+                phone = request.POST.get('phone', selected_user.profile.phone or '')
+                email = request.POST.get('email', selected_user.email or '')
+            except User.DoesNotExist:
+                name = request.POST.get('name')
+                role = request.POST.get('role')
+                phone = request.POST.get('phone')
+                email = request.POST.get('email', '')
+        else:
+            # Manual entry
+            name = request.POST.get('name')
+            role = request.POST.get('role')
+            phone = request.POST.get('phone')
+            email = request.POST.get('email', '')
+        
+        is_emergency = request.POST.get('is_emergency') == 'on'
+        
+        if name and phone:
+            ContactInfo.objects.create(
+                club=club,
+                name=name,
+                role=role,
+                phone=phone,
+                email=email,
+                is_emergency=is_emergency
+            )
+            messages.success(request, f'Contact "{name}" added successfully!')
+        else:
+            messages.error(request, 'Name and phone number are required.')
+        
+        return redirect('manage_contacts')
+    
+    return redirect('manage_contacts')
+
+
+@login_required
+@user_passes_test(is_club_admin)
+def edit_contact(request, contact_id):
+    """Club Admin can edit existing contact information"""
+    club = request.user.profile.club
+    contact = get_object_or_404(ContactInfo, id=contact_id, club=club)
+    
+    # Get club users for dropdown in edit form
+    from django.contrib.auth.models import User
+    club_users = User.objects.filter(
+        profile__club=club,
+        profile__role__in=['club_admin', 'coach', 'assistant_coach']
+    ).select_related('profile')
+    
+    if request.method == 'POST':
+        # Check if user selected from dropdown
+        user_id = request.POST.get('user_id')
+        
+        if user_id and user_id != '':
+            from django.contrib.auth.models import User
+            try:
+                selected_user = User.objects.get(id=user_id)
+                contact.name = selected_user.get_full_name() or selected_user.username
+                contact.role = selected_user.profile.get_role_display()
+                contact.phone = request.POST.get('phone', selected_user.profile.phone or '')
+                contact.email = request.POST.get('email', selected_user.email or '')
+            except User.DoesNotExist:
+                contact.name = request.POST.get('name')
+                contact.role = request.POST.get('role')
+                contact.phone = request.POST.get('phone')
+                contact.email = request.POST.get('email', '')
+        else:
+            # Manual entry
+            contact.name = request.POST.get('name')
+            contact.role = request.POST.get('role')
+            contact.phone = request.POST.get('phone')
+            contact.email = request.POST.get('email', '')
+        
+        contact.is_emergency = request.POST.get('is_emergency') == 'on'
+        contact.save()
+        
+        messages.success(request, f'Contact "{contact.name}" updated successfully!')
+        return redirect('manage_contacts')
+    
+    context = {
+        'contact': contact,
+        'club': club,
+        'club_users': club_users,
+    }
+    return render(request, 'schools/edit_contact.html', context)
+
+
+@login_required
+@user_passes_test(is_club_admin)
+def delete_contact(request, contact_id):
+    """Club Admin can delete contact information"""
+    club = request.user.profile.club
+    contact = get_object_or_404(ContactInfo, id=contact_id, club=club)
+    
+    if request.method == 'POST':
+        contact_name = contact.name
+        contact.delete()
+        messages.success(request, f'Contact "{contact_name}" deleted successfully!')
+    
+    return redirect('manage_contacts')

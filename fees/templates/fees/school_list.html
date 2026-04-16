@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div style="padding: 20px;">
+    <h2>Select School</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+        {% for school in schools %}
+        <a href="{% url 'fee_school_students' school.id %}" style="text-decoration: none;">
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s; border: 1px solid #e0e0e0;">
+                <div style="font-size: 48px;">🏫</div>
+                <h3 style="margin: 10px 0; color: #333;">{{ school.name }}</h3>
+                <p style="color: #666;">Click to view students</p>
+            </div>
+        </a>
+        {% empty %}
+        <p>No schools assigned to you.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
