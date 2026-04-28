@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.shortcuts import redirect
 from .models import Student, Parent
 from schools.models import School, Club
 
@@ -10,6 +11,12 @@ class StudentAdmin(admin.ModelAdmin):
 
     class Media:
         js = ('js/student_admin.js',)
+
+    def changelist_view(self, request, extra_context=None):
+        """Redirect coaches to school list instead of student list"""
+        if hasattr(request.user, 'profile') and request.user.profile.role in ['coach', 'assistant_coach']:
+            return redirect('/coach-schools/')  # ← HARDCODED URL
+        return super().changelist_view(request, extra_context=extra_context)
 
     def get_queryset(self, request):
         """Filter students by current club (from middleware) and user role"""
@@ -63,28 +70,43 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(Parent)
 class ParentAdmin(admin.ModelAdmin):
-    list_display = ['get_students', 'user', 'relationship', 'phone']
+    list_display = ['get_parent_full_name', 'get_student', 'relationship', 'phone']
     list_filter = ['relationship']
-    search_fields = ['students__name', 'students__ic_number', 'user__username', 'phone']
-
-    def get_students(self, obj):
-        """Display all students for this parent"""
-        return ", ".join([s.name for s in obj.students.all()])
-    get_students.short_description = 'Students'
+    search_fields = ['user__first_name', 'user__last_name', 'user__username', 'student__name', 'student__ic_number', 'phone']
+    
+    def get_parent_full_name(self, obj):
+        """Display parent's full name from User model"""
+        if obj.user:
+            # Show first_name + last_name if available
+            if obj.user.first_name:
+                if obj.user.last_name:
+                    return f"{obj.user.first_name} {obj.user.last_name}"
+                return obj.user.first_name
+            # Fallback to username if no name set
+            return obj.user.username
+        return "-"
+    get_parent_full_name.short_description = 'Parent Name'
+    get_parent_full_name.admin_order_field = 'user__first_name'
+    
+    def get_student(self, obj):
+        """Display the student for this parent"""
+        return obj.student.name if obj.student else "-"
+    get_student.short_description = 'Student Name'
+    get_student.admin_order_field = 'student__name'
 
     def get_queryset(self, request):
         """Filter parents by current club"""
         qs = super().get_queryset(request)
         current_club = getattr(request, 'club', None)
         if current_club:
-            return qs.filter(students__club=current_club).distinct()
+            return qs.filter(student__club=current_club).distinct()
         return qs
 
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
         """Filter student dropdown by current club"""
         current_club = getattr(request, 'club', None)
 
-        if db_field.name == 'students' and current_club:
+        if db_field.name == 'student' and current_club:
             kwargs['queryset'] = Student.objects.filter(club=current_club, is_active=True)
 
-        return super().formfield_for_manytomany(db_field, request, **kwargs)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

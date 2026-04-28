@@ -103,7 +103,7 @@ class Student(models.Model):
                 defaults={'email': f"{username}@example.com"}
             )
             if created:
-                user.set_password('user123456')
+                user.set_password('123456')
                 user.save()
 
             # Create parent record

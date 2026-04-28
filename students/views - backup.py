@@ -11,9 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
-from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib import messages
-from datetime import datetime, date, timedelta
+from django.shortcuts import redirect, render
+from datetime import datetime, date
 from .models import Student, Parent
 from fees.models import Fee
 from schools.models import School, UserProfile, Club
@@ -455,6 +454,8 @@ class CoachSchoolsView(APIView):
         return Response(serializer.data)
 
 
+
+
 # ==================== DASHBOARD API ====================
 
 class DashboardView(APIView):
@@ -677,258 +678,6 @@ class DashboardView(APIView):
         })
 
 
-# ==================== COACH DASHBOARD API (NEW) ====================
-
-class CoachDashboardAPI(APIView):
-    """Complete dashboard API for coaches - all reports in one endpoint"""
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        current_club = get_user_club(request)
-        
-        # Get user's accessible schools
-        if hasattr(user, 'profile') and user.profile.role in ['super_admin', 'club_admin']:
-            schools = School.objects.filter(is_active=True)
-            if current_club:
-                schools = schools.filter(club=current_club)
-        else:
-            # Coach or assistant coach
-            schools = user.profile.schools.filter(is_active=True)
-            if current_club:
-                schools = schools.filter(club=current_club)
-        
-        students = Student.objects.filter(school__in=schools, is_active=True)
-        
-        today = timezone.now().date()
-        
-        # ========== SCHOOLS LIST FOR DROPDOWN ==========
-        schools_list = []
-        for school in schools:
-            schools_list.append({
-                'id': school.id,
-                'name': school.name,
-                'student_count': Student.objects.filter(school=school, is_active=True).count()
-            })
-        
-        # ========== ATTENDANCE DATA ==========
-        from attendance.models import Attendance
-        
-        today_attendance = Attendance.objects.filter(date=today, student__in=students)
-        present_today = today_attendance.filter(is_present=True).count()
-        absent_today = today_attendance.filter(is_present=False).count()
-        
-        # Monthly attendance summary
-        first_day = today.replace(day=1)
-        month_attendance = Attendance.objects.filter(
-            student__in=students,
-            date__gte=first_day,
-            date__lte=today
-        )
-        
-        monthly_summary = []
-        for student in students:
-            student_attendance = month_attendance.filter(student=student)
-            present_count = student_attendance.filter(is_present=True).count()
-            total_classes = student_attendance.count()
-            percent = int((present_count / total_classes * 100)) if total_classes > 0 else 0
-            monthly_summary.append({
-                'name': student.name,
-                'present': present_count,
-                'total': total_classes,
-                'percentage': percent
-            })
-        
-        # Low attendance (<60%)
-        low_attendance = [s for s in monthly_summary if s['percentage'] < 60 and s['total'] > 0]
-        
-        # ========== FEE DATA ==========
-        fees = Fee.objects.filter(student__in=students)
-        
-        # ========== MONTHLY COLLECTION FOR EACH SCHOOL (UNTUK DROPDOWN FILTER) ==========
-        current_year = today.year
-        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        
-        # Collection for ALL schools (overall)
-        overall_monthly_collection = []
-        for month in range(1, 13):
-            total = fees.filter(
-                status='paid',
-                paid_date__year=current_year,
-                paid_date__month=month
-            ).aggregate(total=Sum('amount'))['total'] or 0
-            overall_monthly_collection.append(float(total))
-        
-        # Collection PER SCHOOL (untuk dropdown filter)
-        per_school_collection = {}
-        for school in schools:
-            school_fees = Fee.objects.filter(
-                student__school=school,
-                status='paid',
-                paid_date__year=current_year
-            )
-            school_collection = []
-            for month in range(1, 13):
-                total = school_fees.filter(
-                    paid_date__month=month
-                ).aggregate(total=Sum('amount'))['total'] or 0
-                school_collection.append(float(total))
-            per_school_collection[school.id] = school_collection
-        
-        pending_fees = fees.filter(status='pending')
-        total_pending = pending_fees.count()
-        
-        # Overdue fees (>30 days)
-        cutoff = today - timedelta(days=30)
-        overdue_fees = pending_fees.filter(due_date__lt=cutoff)
-        
-        # Pending list
-        pending_list = []
-        for fee in pending_fees[:30]:
-            pending_list.append({
-                'student': fee.student.name,
-                'month': fee.month.strftime('%B %Y') if fee.month else 'N/A',
-                'amount': float(fee.amount),
-                'due_date': fee.due_date.strftime('%d/%m/%Y') if fee.due_date else 'N/A'
-            })
-        
-        # Overdue list
-        overdue_list = []
-        for fee in overdue_fees[:30]:
-            days = (today - fee.due_date).days if fee.due_date else 0
-            overdue_list.append({
-                'student': fee.student.name,
-                'month': fee.month.strftime('%B %Y') if fee.month else 'N/A',
-                'amount': float(fee.amount),
-                'days_overdue': days
-            })
-        
-        # Recent payments
-        recent_payments = []
-        for fee in fees.filter(status='paid').order_by('-paid_date')[:10]:
-            recent_payments.append({
-                'student': fee.student.name,
-                'amount': float(fee.amount),
-                'date': fee.paid_date.strftime('%d/%m/%Y') if fee.paid_date else 'N/A'
-            })
-        
-        # ========== GRADING DATA ==========
-        belt_order = ['white', 'yellow_1', 'yellow_2', 'green_1', 'green_2', 
-                      'blue_1', 'blue_2', 'red_1', 'red_2', 'black_1']
-        
-        belt_display = {
-            'white': 'White', 'yellow_1': 'Yellow 1', 'yellow_2': 'Yellow 2',
-            'green_1': 'Green 1', 'green_2': 'Green 2', 'blue_1': 'Blue 1',
-            'blue_2': 'Blue 2', 'red_1': 'Red 1', 'red_2': 'Red 2', 'black_1': 'Black 1st'
-        }
-        
-        belt_distribution = {}
-        for student in students:
-            belt = student.belt_rank
-            display_name = belt_display.get(belt, belt.replace('_', ' ').title())
-            belt_distribution[display_name] = belt_distribution.get(display_name, 0) + 1
-        
-        # Students ready for grading (attendance >=75% and not black belt)
-        ready_students = []
-        for student in students:
-            student_attendance = [s for s in monthly_summary if s['name'] == student.name]
-            if student_attendance and student_attendance[0]['percentage'] >= 75:
-                if student.belt_rank in belt_order and belt_order.index(student.belt_rank) < len(belt_order) - 1:
-                    next_belt = belt_order[belt_order.index(student.belt_rank) + 1]
-                    ready_students.append({
-                        'name': student.name,
-                        'current_belt': belt_display.get(student.belt_rank, student.belt_rank),
-                        'next_belt': belt_display.get(next_belt, next_belt),
-                        'attendance_percent': student_attendance[0]['percentage']
-                    })
-        
-        # ========== INACTIVE STUDENTS ==========
-        thirty_days_ago = today - timedelta(days=30)
-        
-        inactive_30 = []
-        inactive_60 = []
-        for student in students:
-            last_attendance = Attendance.objects.filter(student=student).order_by('-date').first()
-            if last_attendance:
-                days_inactive = (today - last_attendance.date).days
-                if 30 < days_inactive <= 60:
-                    inactive_30.append({
-                        'name': student.name,
-                        'last_attendance': last_attendance.date.strftime('%d/%m/%Y'),
-                        'days_inactive': days_inactive
-                    })
-                elif days_inactive > 60:
-                    inactive_60.append({
-                        'name': student.name,
-                        'last_attendance': last_attendance.date.strftime('%d/%m/%Y'),
-                        'days_inactive': days_inactive
-                    })
-        
-        # New students (last 30 days)
-        new_students = []
-        for student in students.filter(join_date__gte=thirty_days_ago):
-            new_students.append({
-                'name': student.name,
-                'join_date': student.join_date.strftime('%d/%m/%Y'),
-                'belt': belt_display.get(student.belt_rank, student.belt_rank)
-            })
-        
-        # ========== ALL STUDENTS LIST ==========
-        all_students = []
-        for student in students:
-            all_students.append({
-                'id': student.id,
-                'name': student.name,
-                'student_id': student.student_id,
-                'ic_number': student.ic_number,
-                'belt': belt_display.get(student.belt_rank, student.belt_rank),
-                'school': student.school.name,
-                'school_id': student.school.id,
-                'phone': student.phone,
-                'parent_ic': student.parent_ic,
-                'join_date': student.join_date.strftime('%d/%m/%Y'),
-                'is_active': student.is_active
-            })
-        
-        # ========== RESPONSE ==========
-        return Response({
-            'summary': {
-                'total_students': students.count(),
-            },
-            'attendance': {
-                'today_present': present_today,
-                'today_absent': absent_today,
-                'present_list': [{'name': a.student.name, 'belt': belt_display.get(a.student.belt_rank, '')} for a in today_attendance.filter(is_present=True)],
-                'absent_list': [{'name': a.student.name} for a in today_attendance.filter(is_present=False)],
-                'monthly_summary': monthly_summary[:30],
-                'low_attendance': low_attendance
-            },
-            'fees': {
-                'total_pending': total_pending,
-                'pending_list': pending_list,
-                'overdue_list': overdue_list,
-                'monthly_collection': overall_monthly_collection,  # Overall untuk default
-                'collection_by_school': per_school_collection,  # TAMBAH NI - collection ikut sekolah
-                'recent_payments': recent_payments
-            },
-            'grading': {
-                'belt_distribution': belt_distribution,
-                'ready_count': len(ready_students),
-                'ready_students': ready_students
-            },
-            'inactive': {
-                'inactive_30': inactive_30,
-                'inactive_60': inactive_60
-            },
-            'students': {
-                'all_students': all_students,
-                'new_students': new_students
-            },
-            'schools': schools_list,
-        })
-
-
 # ==================== DASHBOARD PAGE (HTML) ====================
 
 class DashboardPageView(LoginRequiredMixin, TemplateView):
@@ -1027,13 +776,22 @@ class ParentDashboardView(TemplateView):
                         is_active=True
                     ).order_by('day', 'start_time')
 
-                    # Get contact info
-                    all_contacts = ContactInfo.objects.filter(club=current_student.club)
-                    contact_info = []
-                    for contact in all_contacts:
-                        if contact.schools.count() == 0 or current_student.school in contact.schools.all():
-                            contact_info.append(contact)
-                    contact_info.sort(key=lambda x: (-x.is_emergency, x.order))
+                    if current_student and current_student.club:
+                        from schools.models import ClassSchedule, ContactInfo
+
+                        class_schedule = ClassSchedule.objects.filter(
+                            club=current_student.club,
+                            school=current_student.school,
+                            is_active=True
+                        ).order_by('day', 'start_time')
+
+                        # Get contact info - FIXED for ManyToMany
+                        all_contacts = ContactInfo.objects.filter(club=current_student.club)
+                        contact_info = []
+                        for contact in all_contacts:
+                            if contact.schools.count() == 0 or current_student.school in contact.schools.all():
+                                contact_info.append(contact)
+                        contact_info.sort(key=lambda x: (-x.is_emergency, x.order))
 
                 context = self.get_context_data(**kwargs)
                 context['children'] = children_list
@@ -1061,9 +819,12 @@ class ParentDashboardView(TemplateView):
     def get(self, request, *args, **kwargs):
         # Redirect GET requests to home page
         return redirect('/')
+        
 
+# ==================== TAMBAH INI KAT SINI (PALING BAWAH) ====================
 
-# ==================== COACH WEB PAGES ====================
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
 
 @login_required
 def coach_schools_list(request):
@@ -1082,4 +843,5 @@ def coach_school_students(request, school_id):
             messages.error(request, 'You do not have access to this school.')
             return redirect('coach_schools')
     students = Student.objects.filter(school=school, is_active=True)
-    return render(request, 'students/coach_students.html', {'school': school, 'students': students})
+    return render(request, 'students/coach_students.html', {'school': school, 'students': students})        
+
