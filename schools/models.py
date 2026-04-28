@@ -86,39 +86,58 @@ class UserProfile(models.Model):
     def __str__(self):
         club_name = f"({self.club.name})" if self.club else ""
         return f"{self.user.username} - {self.role} {club_name}"
-        
 
-# schools/models.py - Add this model
 
 class ClassSchedule(models.Model):
+    """Class schedule for each school/club - parents can view this in parent portal"""
     DAY_CHOICES = [
-        ('MON', 'Monday'),
-        ('TUE', 'Tuesday'),
-        ('WED', 'Wednesday'),
-        ('THU', 'Thursday'),
-        ('FRI', 'Friday'),
-        ('SAT', 'Saturday'),
-        ('SUN', 'Sunday'),
+        (1, 'Monday'),
+        (2, 'Tuesday'),
+        (3, 'Wednesday'),
+        (4, 'Thursday'),
+        (5, 'Friday'),
+        (6, 'Saturday'),
+        (7, 'Sunday'),
+    ]
+    
+    BELT_LEVEL_CHOICES = [
+        ('all', 'All Belts'),
+        ('white', 'White Belt'),
+        ('yellow', 'Yellow Belt'),
+        ('green', 'Green Belt'),
+        ('blue', 'Blue Belt'),
+        ('red', 'Red Belt'),
+        ('black', 'Black Belt'),
+        ('children', 'Children Class'),
+        ('adult', 'Adult Class'),
     ]
     
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='schedules')
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='schedules')
-    day = models.CharField(max_length=3, choices=DAY_CHOICES)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='schedules', null=True, blank=True, help_text="Leave blank for club-wide schedule")
+    day = models.IntegerField(choices=DAY_CHOICES)
     start_time = models.TimeField()
     end_time = models.TimeField()
-    belt_level = models.CharField(max_length=50, help_text="e.g., White - Yellow, All Belts")
+    belt_level = models.CharField(max_length=50, choices=BELT_LEVEL_CHOICES, default='all')
     instructor = models.CharField(max_length=100)
+    location = models.CharField(max_length=200, blank=True, help_text="Training venue/location")
     is_active = models.BooleanField(default=True)
     
+    class Meta:
+        ordering = ['day', 'start_time']
+    
     def __str__(self):
-        return f"{self.get_day_display()}: {self.start_time} - {self.end_time} ({self.belt_level})"
-        
-        
+        return f"{self.get_day_display()}: {self.start_time} - {self.end_time} ({self.get_belt_level_display()}) - {self.instructor}"
+    
+    def get_day_display(self):
+        """Return the day name (overrides the default to handle integer choices)"""
+        days = dict(self.DAY_CHOICES)
+        return days.get(self.day, 'Unknown')
 
-# schools/models.py - Add this model
 
 class ContactInfo(models.Model):
+    """Contact information (emergency contacts, admin contacts) - parents can view this"""
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='contacts')
+    schools = models.ManyToManyField(School, related_name='contacts', blank=True, help_text="Select specific schools or leave blank for ALL schools")
     name = models.CharField(max_length=100, help_text="e.g., Coach Ali, Admin Office")
     role = models.CharField(max_length=50, help_text="e.g., Head Coach, Admin")
     phone = models.CharField(max_length=20)
@@ -130,4 +149,15 @@ class ContactInfo(models.Model):
         ordering = ['order', 'name']
     
     def __str__(self):
-        return f"{self.name} - {self.role}"        
+        if self.schools.count() == 0:
+            return f"{self.name} - {self.role} (All Schools)"
+        elif self.schools.count() == 1:
+            return f"{self.name} - {self.role} ({self.schools.first().name})"
+        else:
+            return f"{self.name} - {self.role} ({self.schools.count()} schools)"
+    
+    def get_schools_display(self):
+        """Return comma-separated list of schools"""
+        if self.schools.count() == 0:
+            return "🏫 All Schools"
+        return ", ".join([s.name for s in self.schools.all()])
