@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.utils import timezone
+from django.contrib.auth.models import User
 from .models import Attendance
 from students.models import Student
 from schools.models import School
@@ -13,16 +14,34 @@ def attendance_take(request):
     
     # Get user's profile
     user_profile = request.user.profile if hasattr(request.user, 'profile') else None
+    current_club = getattr(request, 'club', None)
     
     # Filter schools based on user role
     if user_profile and user_profile.role == 'super_admin':
         schools = School.objects.filter(is_active=True)
+        if current_club:
+            schools = schools.filter(club=current_club)
     elif user_profile and user_profile.role in ['coach', 'assistant_coach']:
         # Coach/assistant coach only sees their assigned schools
         schools = user_profile.schools.filter(is_active=True)
+        if current_club:
+            schools = schools.filter(club=current_club)
     else:
         # Fallback - no schools
         schools = School.objects.none()
+    
+    # Get all coaches for dropdown (from current club)
+    coaches = []
+    if current_club:
+        coaches = User.objects.filter(
+            profile__role__in=['coach', 'assistant_coach'],
+            profile__club=current_club
+        ).select_related('profile')
+    elif user_profile and user_profile.club:
+        coaches = User.objects.filter(
+            profile__role__in=['coach', 'assistant_coach'],
+            profile__club=user_profile.club
+        ).select_related('profile')
     
     selected_school = None
     students = []
@@ -107,5 +126,6 @@ def attendance_take(request):
         'selected_class': selected_class,
         'present_students': present_students,
         'class_types': Attendance.CLASS_TYPE,
+        'coaches': coaches,  # ← TAMBAH NI
     }
     return render(request, 'attendance/take_attendance.html', context)
