@@ -165,7 +165,14 @@
             
             <div class="form-group">
                 <label>Instructor:</label>
-                <input type="text" name="instructor" placeholder="Instructor Name" required>
+                <select name="instructor" required>
+                    <option value="">-- Select Instructor --</option>
+                    {% for coach in coaches %}
+                        <option value="{{ coach.get_full_name|default:coach.username }}" {% if instructor_name == coach.get_full_name|default:coach.username %}selected{% endif %}>
+                            {{ coach.get_full_name|default:coach.username }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
             
             <button type="submit" name="load_students">Load Students</button>
@@ -187,7 +194,7 @@
                     <label for="selectAllCheckbox">Select All Present</label>
                 </div>
                 
-                 <table>
+                <table>
                     <thead>
                          <tr>
                             <th>#</th>
