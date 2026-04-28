@@ -84,6 +84,12 @@ def fee_student_detail(request, student_id):
 def fee_mark_paid(request, fee_id):
     fee = get_object_or_404(Fee, id=fee_id)
 
+    # ✅ CHECK FOR DOUBLE PAYMENT
+    if fee.status == 'paid':
+        month_str = fee.month.strftime('%B %Y') if fee.month else "Fee"
+        messages.warning(request, f'⚠️ Fee for {fee.student.name} - {month_str} is already paid! Receipt: {fee.receipt_number}')
+        return redirect('fee_student_detail', student_id=fee.student.id)
+
     # Permission check
     if hasattr(request.user, 'profile') and request.user.profile.role != 'super_admin':
         if fee.student.school not in request.user.profile.schools.all():
@@ -93,7 +99,7 @@ def fee_mark_paid(request, fee_id):
     mark_fee_as_paid(fee)
 
     month_str = fee.month.strftime('%B %Y') if fee.month else "Fee"
-    messages.success(request, f'Fee for {fee.student.name} - {month_str} marked as paid.')
+    messages.success(request, f'✅ Fee for {fee.student.name} - {month_str} marked as paid. Receipt: {fee.receipt_number}')
 
     return redirect('fee_student_detail', student_id=fee.student.id)
 
