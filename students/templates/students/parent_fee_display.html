@@ -330,7 +330,7 @@
         .status-paid { color: #10b981; font-weight: 600; }
         .status-pending { color: #f59e0b; font-weight: 600; }
         .status-overdue { color: #ef4444; font-weight: 600; }
-		.status-waive { color: #8b5cf6; font-weight: 600; }
+        .status-waive { color: #8b5cf6; font-weight: 600; }
 
         .present-badge {
             background: #10b981;
@@ -461,21 +461,30 @@
         .toast.error {
             background-color: #ef4444;
         }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .tab-btn, .btn-logout, .child-selector, .overdue-badge, .download-btn, .no-receipt {
+                display: none;
+            }
+            .card {
+                box-shadow: none;
+                padding: 0;
+            }
+            .data-table th {
+                background: #333;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Toast Notification -->
-        <div id="toast" class="toast"></div>
-
-        <div class="logo">
-            {% load static %}
-            {% if club_logo %}
-                <img src="{{ club_logo }}" alt="{{ club_name }}">
-            {% else %}
-                <img src="{% static 'images/logo.png' %}" alt="Taekwondo Club">
-            {% endif %}
-        </div>
+    
 
         <div class="card">
             <div class="header-flex">
@@ -538,6 +547,7 @@
                 <button class="tab-btn" onclick="showTab('attendance')">📝 Attendance</button>
                 <button class="tab-btn" onclick="showTab('schedule')">📅 Class Schedule</button>
                 <button class="tab-btn" onclick="showTab('contact')">📞 Contact Info</button>
+                <button class="tab-btn" onclick="printFees()">🖨️ Print</button>
             </div>
 
             <!-- Fees Tab -->
@@ -575,60 +585,77 @@
             </div>
 
             <!-- Class Schedule Tab -->
-            <div id="scheduleTab" class="tab-content">
-                <h3>📅 Class Schedule</h3>
-                {% if class_schedule %}
-                    {% for schedule in class_schedule %}
-                    <div class="schedule-card">
-                        <div class="schedule-day">{{ schedule.get_day_display }}</div>
-                        <div class="schedule-time">{{ schedule.start_time|time:"g:i A" }} - {{ schedule.end_time|time:"g:i A" }}</div>
-                        <div class="schedule-details">
-                            🥋 Belt: {{ schedule.belt_level }}<br>
-                            👨‍🏫 Instructor: {{ schedule.instructor }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-message">
-                        No class schedule available for this school.<br>
-                        Please contact your coach for class timings.
-                    </div>
-                {% endif %}
-            </div>
+			<div id="scheduleTab" class="tab-content">
+				<h3>📅 Class Schedule</h3>
+				{% if class_schedule %}
+					{% for schedule in class_schedule %}
+					<div class="schedule-card">
+						<div class="schedule-day">
+							{# Support both integer (1-7) and string (MON, TUE, etc.) #}
+							{% if schedule.day == 1 or schedule.day == 'MON' or schedule.day == 'Monday' %}Monday
+							{% elif schedule.day == 2 or schedule.day == 'TUE' or schedule.day == 'Tuesday' %}Tuesday
+							{% elif schedule.day == 3 or schedule.day == 'WED' or schedule.day == 'Wednesday' %}Wednesday
+							{% elif schedule.day == 4 or schedule.day == 'THU' or schedule.day == 'Thursday' %}Thursday
+							{% elif schedule.day == 5 or schedule.day == 'FRI' or schedule.day == 'Friday' %}Friday
+							{% elif schedule.day == 6 or schedule.day == 'SAT' or schedule.day == 'Saturday' %}Saturday
+							{% elif schedule.day == 7 or schedule.day == 'SUN' or schedule.day == 'Sunday' %}Sunday
+							{% else %}{{ schedule.day|title }}{% endif %}
+						</div>
+						<div class="schedule-time">{{ schedule.start_time|time:"g:i A" }} - {{ schedule.end_time|time:"g:i A" }}</div>
+						<div class="schedule-details">
+							🥋 Belt: {{ schedule.get_belt_level_display }}<br>
+							👨‍🏫 Instructor: {{ schedule.instructor }}
+						</div>
+					</div>
+					{% endfor %}
+				{% else %}
+					<div class="empty-message">
+						No class schedule available for this school.<br>
+						Please contact your coach for class timings.
+					</div>
+				{% endif %}
+			</div>
 
-            <!-- Contact Info Tab -->
-            <div id="contactTab" class="tab-content">
-                <h3>📞 Contact Information</h3>
-                {% if contact_info %}
-                    {% for contact in contact_info %}
-                    <div class="contact-card">
-                        <div class="contact-icon">
-                            {% if contact.is_emergency %}🚨{% else %}👤{% endif %}
-                        </div>
-                        <div class="contact-info">
-                            <div class="contact-name">
-                                {{ contact.name }}
-                                {% if contact.is_emergency %}
-                                    <span class="emergency-badge">EMERGENCY</span>
-                                {% endif %}
-                            </div>
-                            <div class="contact-role">{{ contact.role }}</div>
-                            <a href="tel:{{ contact.phone }}" class="contact-phone">📞 {{ contact.phone }}</a>
-                            {% if contact.email %}
-                                <div style="margin-top: 5px;">
-                                    <a href="mailto:{{ contact.email }}" style="color: #667eea; font-size: 12px; text-decoration: none;">✉️ {{ contact.email }}</a>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-message">
-                        No contact information available.<br>
-                        Please contact your coach directly.
-                    </div>
-                {% endif %}
-            </div>
+			<!-- Contact Info Tab -->
+			<div id="contactTab" class="tab-content">
+				<h3>📞 Contact Information</h3>
+				{% if contact_info %}
+					{% for contact in contact_info %}
+					<div class="contact-card">
+						<div class="contact-icon">
+							{% if contact.is_emergency %}🚨{% else %}👤{% endif %}
+						</div>
+						<div class="contact-info">
+							<div class="contact-name">
+								{{ contact.name }}
+								{% if contact.is_emergency %}
+									<span class="emergency-badge">EMERGENCY</span>
+								{% endif %}
+								{% if contact.schools.count > 0 %}
+									<span style="font-size: 10px; color: #888; margin-left: 5px;">
+										({{ contact.get_schools_display }})
+									</span>
+								{% else %}
+									<span style="font-size: 10px; color: #888; margin-left: 5px;">(All Schools)</span>
+								{% endif %}
+							</div>
+							<div class="contact-role">{{ contact.role }}</div>
+							<a href="tel:{{ contact.phone }}" class="contact-phone">📞 {{ contact.phone }}</a>
+							{% if contact.email %}
+								<div style="margin-top: 5px;">
+									<a href="mailto:{{ contact.email }}" style="color: #667eea; font-size: 12px; text-decoration: none;">✉️ {{ contact.email }}</a>
+								</div>
+							{% endif %}
+						</div>
+					</div>
+					{% endfor %}
+				{% else %}
+					<div class="empty-message">
+						No contact information available.<br>
+						Please contact your coach directly.
+					</div>
+				{% endif %}
+			</div>
 
             <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
@@ -681,6 +708,11 @@
                 document.getElementById('contactTab').classList.add('active');
                 document.querySelector('.tab-btn:nth-child(4)').classList.add('active');
             }
+        }
+
+        // Print current view
+        function printFees() {
+            window.print();
         }
 
         // Download Receipt Function
@@ -781,10 +813,16 @@
                     } else if (fee.status === 'overdue') {
                         statusClass = 'status-overdue';
                         statusText = 'OVERDUE';
-                    } else if (fee.status === 'waive') {
-						statusClass = 'status-waive';
-						statusText = 'WAIVED';
-					}
+                    } else if (fee.status === 'waive' || fee.status === 'waived') {
+                        statusClass = 'status-waive';
+                        statusText = 'WAIVED';
+                    } else if (fee.amount == 0) {
+                        statusClass = 'status-waive';
+                        statusText = 'WAIVED';
+                    } else {
+                        statusClass = 'status-pending';
+                        statusText = 'PENDING';
+                    }
 
                     let monthDisplay = fee.month;
                     if (fee.month) {
@@ -799,16 +837,16 @@
                         receiptButton = '<span class="no-receipt">-</span>';
                     }
 
-                    let typeDisplay = fee.fee_type_display || fee.fee_type || '-';
+                    let typeDisplay = fee.fee_type_display || fee.fee_type || 'Monthly';
 
-					html += `<tr>
-						<td>${monthDisplay}</td>
-						<td>${typeDisplay}</td>
-						<td>RM ${parseFloat(fee.amount).toFixed(2)}</td>
-						<td>${fee.due_date}</td>
-						<td class="${statusClass}">${statusText}</td>
-						<td>${receiptButton}</td>
-					</tr>`;
+                    html += `<tr>
+                        <td>${monthDisplay}</td>
+                        <td>${typeDisplay}</td>
+                        <td>RM ${parseFloat(fee.amount).toFixed(2)}</td>
+                        <td>${fee.due_date || '-'}</td>
+                        <td class="${statusClass}">${statusText}</td>
+                        <td>${receiptButton}</td>
+                    </tr>`;
                 });
 
                 html += '</tbody></table>';

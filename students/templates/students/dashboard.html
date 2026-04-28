@@ -1,153 +1,344 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard - Taekwondo System</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Coach Dashboard - Taekwondo System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
             background: #f5f5f5;
         }
+        
         .container {
             max-width: 1200px;
-            margin: auto;
+            margin: 0 auto;
+            padding: 15px;
         }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .stat-card {
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .header h1 small {
+            font-size: 12px;
+            opacity: 0.9;
+            display: block;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #4CAF50;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 14px;
             transition: transform 0.2s;
         }
-        .stat-card:hover {
-            transform: scale(1.02);
+        
+        .btn:active {
+            transform: scale(0.95);
         }
-        .clickable {
-            cursor: pointer;
-        }
-        .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: #4CAF50;
-        }
-        .stat-label {
-            color: #666;
-            margin-top: 10px;
-        }
-        .chart-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        canvas {
-            max-height: 400px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background: #4CAF50;
-            color: white;
-        }
-        h1, h2, h3 {
-            color: #333;
-        }
-        .btn {
-            background: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-            display: inline-block;
-            text-decoration: none;
-        }
+        
         .btn-red {
             background: #f44336;
-        }
-        .btn-gray {
-            background: #666;
-        }
-        .back-btn {
-            background: #666;
             color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 15px;
         }
-        .error {
-            color: red;
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            margin: 50px auto;
-            max-width: 500px;
+        
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 1px solid white;
         }
-        .header-buttons {
-            text-align: right;
+        
+        /* Stats Cards */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
-            padding: 10px;
+        }
+        
+        .stat-card {
             background: white;
-            border-radius: 10px;
-        }
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 18px;
-            color: #666;
-        }
-        .school-card {
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
             padding: 15px;
-            margin: 10px 0;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             cursor: pointer;
             transition: all 0.2s;
         }
-        .school-card:hover {
-            background: #e8f5e9;
-            border-color: #4CAF50;
+        
+        .stat-card:active {
+            transform: scale(0.98);
         }
-        .school-name {
-            font-size: 18px;
+        
+        .stat-number {
+            font-size: 28px;
             font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        /* School Selector Dropdown */
+        .school-selector {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .school-selector label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
             color: #333;
         }
-        .school-count {
-            float: right;
+        
+        .school-selector select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .school-selector select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            background: #f0f0f0;
+            border: none;
+            padding: 12px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            min-height: 50px;
+        }
+        
+        .tab-btn.active {
             background: #4CAF50;
             color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
         }
-        .school-count.overdue {
+        
+        /* Section containers */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Cards and Lists */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .student-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        
+        .student-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .student-detail {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .badge-success {
+            background: #e8f5e9;
+            color: #4CAF50;
+        }
+        
+        .badge-warning {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        
+        .badge-danger {
+            background: #ffebee;
+            color: #f44336;
+        }
+        
+        .badge-info {
+            background: #e3f2fd;
+            color: #2196F3;
+        }
+        
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            background: #4CAF50;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        
+        .progress-fill.low {
             background: #f44336;
         }
+        
+        .progress-fill.medium {
+            background: #ff9800;
+        }
+        
+        /* Two column layout */
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .two-columns {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        /* Chart containers */
+        .chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        canvas {
+            max-height: 250px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #333;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -158,412 +349,728 @@
             background: rgba(0,0,0,0.5);
             z-index: 1000;
         }
+        
         .modal-content {
             background: white;
             margin: 50px auto;
-            max-width: 900px;
+            max-width: 500px;
             width: 90%;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             max-height: 80%;
             overflow-y: auto;
-            position: relative;
         }
-        .modal-content table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        .modal-content th, .modal-content td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .modal-content th {
-            background: #4CAF50;
-            color: white;
-        }
+        
         .close-modal {
             background: #f44336;
             color: white;
             padding: 8px 15px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             float: right;
-            margin-bottom: 10px;
+        }
+        
+        .refresh-btn {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        
+        /* School name display */
+        .current-school-badge {
+            background: #e8f5e9;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #4CAF50;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
-    <div id="dashboardDiv">
-        <div class="container">
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>🥋 Coach Dashboard <small id="clubName">{{ current_club.name|default:'Taekwondo Club' }}</small></h1>
+            </div>
             <div class="header-buttons">
-                <a href="/admin/" class="btn btn-gray">← Back to Admin</a>
+                <a href="/admin/" class="btn btn-outline">← Admin</a>
                 <a href="/admin/logout/" class="btn btn-red">Logout</a>
             </div>
-            <h1>Taekwondo Management Dashboard</h1>
-            
-            <div id="loadingMsg" class="loading">Loading dashboard...</div>
-            
-            <div id="dashboardContent" style="display:none">
-                <div class="stats" id="summary"></div>
-                
-                <div class="chart-container">
-                    <h3>Monthly Fee Collection by School (RM)</h3>
-                    <canvas id="monthlyChart"></canvas>
+        </div>
+        
+        <!-- School Selector Dropdown -->
+        <div class="school-selector">
+            <label>🏫 Select School:</label>
+            <select id="schoolSelect" onchange="changeSchool()">
+                <option value="all">📚 ALL SCHOOLS (Super Admin only)</option>
+            </select>
+        </div>
+        
+        <!-- Quick Stats (Clickable) -->
+        <div class="stats" id="summary">
+            <div class="stat-card">
+                <div class="stat-number" id="totalStudents">-</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card" onclick="scrollToTab('attendance')">
+                <div class="stat-number" id="presentToday">-</div>
+                <div class="stat-label">Present Today ▼</div>
+            </div>
+            <div class="stat-card" onclick="scrollToTab('fees')">
+                <div class="stat-number" id="pendingFees">-</div>
+                <div class="stat-label">Pending Fees ▼</div>
+            </div>
+            <div class="stat-card" onclick="scrollToTab('grading')">
+                <div class="stat-number" id="readyGrading">-</div>
+                <div class="stat-label">Ready for Grading ▼</div>
+            </div>
+        </div>
+        
+        <!-- Quick Action Buttons -->
+        <div class="action-buttons">
+            <a href="/attendance/take/" class="action-btn">📝 Take Attendance</a>
+            <a href="/fees/schools/" class="action-btn">💰 Mark Fees</a>
+            <a href="/admin/students/student/" class="action-btn">👥 All Students</a>
+            <button class="action-btn" onclick="refreshAllData()">🔄 Refresh</button>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('attendance')">📅 Attendance</button>
+            <button class="tab-btn" onclick="showTab('fees')">💰 Fees</button>
+            <button class="tab-btn" onclick="showTab('grading')">🎯 Grading</button>
+            <button class="tab-btn" onclick="showTab('inactive')">⚠️ Inactive</button>
+            <button class="tab-btn" onclick="showTab('students')">👥 Students</button>
+        </div>
+        
+        <!-- TAB 1: ATTENDANCE REPORTS -->
+        <div id="tab-attendance" class="tab-content active">
+            <!-- Today's Attendance -->
+            <div class="card">
+                <h3>📅 Today's Attendance</h3>
+                <div id="todayAttendance">
+                    <div class="loading">Loading...</div>
                 </div>
-                
-                <div class="chart-container">
-                    <h3>Students per School</h3>
-                    <canvas id="studentsChart"></canvas>
+                <div class="action-buttons" style="margin-top: 15px;">
+                    <a href="/attendance/take/" class="action-btn">📝 Take Attendance Now</a>
                 </div>
-                
-                <div class="chart-container">
-                    <h3>Recent Payments</h3>
-                    <table id="paymentsTable">
-                        <thead>
-                            <tr><th>Student</th><th>School</th><th>Amount (RM)</th><th>Date</th>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+            </div>
+            
+            <!-- Monthly Attendance Summary -->
+            <div class="card">
+                <h3>📊 Monthly Attendance Summary</h3>
+                <div id="monthlyAttendance">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <!-- Low Attendance Warning -->
+            <div class="card">
+                <h3>⚠️ Low Attendance Warning (&lt;60%)</h3>
+                <div id="lowAttendance">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 2: FEE REPORTS -->
+        <div id="tab-fees" class="tab-content">
+            <div class="two-columns">
+                <div class="card">
+                    <h3>⏳ Pending Fees</h3>
+                    <div id="pendingFeesList">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>⚠️ Overdue Fees (&gt;30 days)</h3>
+                    <div id="overdueFeesList">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>📈 Monthly Fee Collection</h3>
+                <canvas id="feeChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>💵 Recent Payments</h3>
+                <div id="recentPayments">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 3: GRADING REPORTS -->
+        <div id="tab-grading" class="tab-content">
+            <div class="chart-container">
+                <h3>🥋 Belt Level Distribution</h3>
+                <canvas id="beltChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>🎯 Ready for Next Grading</h3>
+                <div id="readyForGrading">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>📋 Belt Summary</h3>
+                <div id="beltSummary">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 4: INACTIVE STUDENTS -->
+        <div id="tab-inactive" class="tab-content">
+            <div class="two-columns">
+                <div class="card">
+                    <h3>📅 Inactive &gt;30 days</h3>
+                    <div id="inactive30">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>⚠️ Inactive &gt;60 days</h3>
+                    <div id="inactive60">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>🆕 New Students (Last 30 days)</h3>
+                <div id="newStudents">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 5: STUDENTS LIST (Filtered by School) -->
+        <div id="tab-students" class="tab-content">
+            <div class="card">
+                <h3>👥 Students <span id="currentSchoolName" class="current-school-badge"></span></h3>
+                <input type="text" id="studentSearch" placeholder="🔍 Search by name or IC..." style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px;">
+                <div id="allStudents">
+                    <div class="loading">Loading...</div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Modal for Collection Breakdown -->
-    <div id="collectionModal" class="modal">
+    
+    <!-- Modal for Student Details -->
+    <div id="studentModal" class="modal">
         <div class="modal-content">
-            <button class="close-modal" onclick="closeModal('collectionModal')">× Close</button>
-            <h3>📊 Collection Breakdown by School & Month</h3>
-            <div id="collectionBreakdownList"></div>
+            <button class="close-modal" onclick="closeModal()">× Close</button>
+            <div id="studentModalContent"></div>
         </div>
-    </div>
-
-    <!-- Modal for Pending Fees (School List) -->
-    <div id="pendingSchoolModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModal('pendingSchoolModal')">× Close</button>
-            <h3>⏳ Pending Fees by School</h3>
-            <div id="pendingSchoolList"></div>
-        </div>
-    </div>
-
-    <!-- Modal for Pending Fees (Student Details) -->
-    <div id="pendingDetailModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModal('pendingDetailModal')">× Close</button>
-            <button class="back-btn" onclick="backToPendingSchools()">← Back to Schools</button>
-            <h3 id="pendingSchoolTitle"></h3>
-            <div id="pendingDetailList"></div>
-        </div>
-    </div>
-
-    <!-- Modal for Overdue Fees (School List) -->
-    <div id="overdueSchoolModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModal('overdueSchoolModal')">× Close</button>
-            <h3>⚠️ Overdue Fees by School</h3>
-            <div id="overdueSchoolList"></div>
-        </div>
-    </div>
-
-    <!-- Modal for Overdue Fees (Student Details) -->
-    <div id="overdueDetailModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModal('overdueDetailModal')">× Close</button>
-            <button class="back-btn" onclick="backToOverdueSchools()">← Back to Schools</button>
-            <h3 id="overdueSchoolTitle"></h3>
-            <div id="overdueDetailList"></div>
-        </div>
-    </div>
-
-    <div id="errorDiv" class="error" style="display:none">
-        <p>You need to be logged in to view the dashboard.</p>
-        <a href="/admin/login/?next=/dashboard/" class="btn">Go to Admin Login</a>
     </div>
 
     <script>
-    let monthlyChart = null;
-    let studentsChart = null;
     let dashboardData = null;
-
+    let feeChart = null;
+    let beltChart = null;
+    let currentSchoolId = 'all';
+    let schoolsList = [];
+    
+    // Load all dashboard data
     async function loadDashboard() {
         try {
-            const response = await fetch('/api/dashboard/');
-            
-            if (response.status === 403 || response.status === 401) {
-                document.getElementById('dashboardDiv').style.display = 'none';
-                document.getElementById('errorDiv').style.display = 'block';
-                return;
-            }
-            
-            if (!response.ok) {
-                throw new Error('Failed to load dashboard');
-            }
-            
+            const response = await fetch('/api/coach/dashboard/');
+            if (!response.ok) throw new Error('Failed to load');
             dashboardData = await response.json();
             
-            document.getElementById('loadingMsg').style.display = 'none';
-            document.getElementById('dashboardContent').style.display = 'block';
+            // Populate school dropdown
+            populateSchoolDropdown();
             
-            // Update summary stats with clickable cards
-            const summaryHtml = `
-                <div class="stat-card"><div class="stat-number">${dashboardData.summary.total_students}</div><div class="stat-label">Total Students</div></div>
-                <div class="stat-card clickable" onclick="showCollectionBreakdown()"><div class="stat-number">RM ${parseFloat(dashboardData.summary.total_collected).toFixed(2)}</div><div class="stat-label">Total Collected (${dashboardData.current_year}) ▼</div></div>
-                <div class="stat-card clickable" onclick="showPendingSchools()"><div class="stat-number">${dashboardData.summary.total_pending}</div><div class="stat-label">Pending Fees ▼</div></div>
-                <div class="stat-card clickable" onclick="showOverdueSchools()"><div class="stat-number">${dashboardData.summary.total_overdue}</div><div class="stat-label">Overdue Fees ▼</div></div>
-            `;
-            document.getElementById('summary').innerHTML = summaryHtml;
-            
-            // Monthly fees chart
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const datasets = dashboardData.monthly_fees.map(school => ({
-                label: school.school,
-                data: school.months,
-                borderWidth: 1
-            }));
-            
-            if (monthlyChart) monthlyChart.destroy();
-            const ctx1 = document.getElementById('monthlyChart').getContext('2d');
-            monthlyChart = new Chart(ctx1, {
-                type: 'bar',
-                data: { labels: months, datasets: datasets },
-                options: { 
-                    responsive: true, 
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Amount (RM)' } } }
-                }
-            });
-            
-            // Students per school chart
-            const schoolNames = dashboardData.students_per_school.map(s => s.school);
-            const studentCounts = dashboardData.students_per_school.map(s => s.count);
-            
-            if (studentsChart) studentsChart.destroy();
-            const ctx2 = document.getElementById('studentsChart').getContext('2d');
-            studentsChart = new Chart(ctx2, {
-                type: 'pie',
-                data: { 
-                    labels: schoolNames, 
-                    datasets: [{ 
-                        data: studentCounts, 
-                        backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#FFC107']
-                    }] 
-                }
-            });
-            
-            // Recent payments table
-            const tbody = document.querySelector('#paymentsTable tbody');
-            tbody.innerHTML = '';
-            if (dashboardData.recent_payments && dashboardData.recent_payments.length > 0) {
-                dashboardData.recent_payments.forEach(payment => {
-                    const row = tbody.insertRow();
-                    row.insertCell(0).innerText = payment.student;
-                    row.insertCell(1).innerText = payment.school;
-                    row.insertCell(2).innerText = parseFloat(payment.amount).toFixed(2);
-                    row.insertCell(3).innerText = payment.paid_date;
-                });
-            } else {
-                const row = tbody.insertRow();
-                row.insertCell(0).colSpan = 4;
-                row.insertCell(0).innerText = 'No recent payments';
-                row.insertCell(0).style.textAlign = 'center';
-            }
+            // Update all displays
+            updateAllDisplays();
             
         } catch (error) {
             console.error('Error:', error);
-            document.getElementById('loadingMsg').innerHTML = 'Error loading dashboard. Please try again.';
+            document.querySelectorAll('.loading').forEach(el => {
+                el.innerHTML = '<p class="empty-state">❌ Failed to load data. Please refresh.</p>';
+            });
         }
     }
-
-    function showCollectionBreakdown() {
-		const breakdown = dashboardData.collection_breakdown;
-		let html = '';
-		if (!breakdown || breakdown.length === 0) {
-			html = '<p style="text-align:center; padding:20px;">No collection data for this year.</p>';
-		} else {
-			// Group by school
-			const schoolMap = {};
-			breakdown.forEach(item => {
-				if (!schoolMap[item.school]) {
-					schoolMap[item.school] = [];
-				}
-				schoolMap[item.school].push({
-					month: item.month,
-					amount: item.amount
-				});
-			});
-			
-			// Create school cards
-			html = '<div>';
-			for (const [schoolName, months] of Object.entries(schoolMap)) {
-				const total = months.reduce((sum, m) => sum + m.amount, 0);
-				html += `
-					<div class="school-card" onclick="showCollectionDetails('${schoolName.replace(/'/g, "\\'")}')">
-						<span class="school-name">${schoolName}</span>
-						<span class="school-count">RM ${total.toFixed(2)} total</span>
+    
+    function populateSchoolDropdown() {
+        if (!dashboardData?.schools) return;
+        
+        schoolsList = dashboardData.schools;
+        const select = document.getElementById('schoolSelect');
+        select.innerHTML = '<option value="all">📚 ALL SCHOOLS</option>';
+        
+        schoolsList.forEach(school => {
+            const option = document.createElement('option');
+            option.value = school.id;
+            option.textContent = `🏫 ${school.name} (${school.student_count} students)`;
+            select.appendChild(option);
+        });
+    }
+    
+    function changeSchool() {
+        const select = document.getElementById('schoolSelect');
+        currentSchoolId = select.value;
+        updateCurrentSchoolDisplay();
+        updateAllDisplays();
+    }
+    
+    function updateCurrentSchoolDisplay() {
+        const schoolNameSpan = document.getElementById('currentSchoolName');
+        if (currentSchoolId === 'all') {
+            schoolNameSpan.textContent = ' - ALL SCHOOLS';
+        } else {
+            const school = schoolsList.find(s => s.id == currentSchoolId);
+            schoolNameSpan.textContent = school ? ` - ${school.name}` : '';
+        }
+    }
+    
+    function filterStudentsBySchool(students) {
+        if (currentSchoolId === 'all') return students;
+        return students.filter(s => s.school_id == currentSchoolId);
+    }
+    
+    function filterAttendanceBySchool(attendanceData) {
+        if (currentSchoolId === 'all') return attendanceData;
+        // For attendance, we need to filter by school based on student names
+        // Since API returns data filtered by school already, we just return as is
+        // But we'll filter monthly summary based on selected school
+        return attendanceData;
+    }
+    
+    function updateAllDisplays() {
+        updateSummaryStats();
+        updateAttendanceTab();
+        updateFeesTab();
+        updateGradingTab();
+        updateInactiveTab();
+        updateStudentsTab();
+    }
+    
+    function updateSummaryStats() {
+        if (!dashboardData) return;
+        
+        let totalStudents = dashboardData.summary?.total_students || 0;
+        if (currentSchoolId !== 'all') {
+            const school = schoolsList.find(s => s.id == currentSchoolId);
+            totalStudents = school ? school.student_count : 0;
+        }
+        
+        document.getElementById('totalStudents').innerText = totalStudents;
+        document.getElementById('presentToday').innerText = dashboardData.attendance?.today_present || 0;
+        document.getElementById('pendingFees').innerText = dashboardData.fees?.total_pending || 0;
+        document.getElementById('readyGrading').innerText = dashboardData.grading?.ready_count || 0;
+    }
+    
+    function updateAttendanceTab() {
+        if (!dashboardData?.attendance) return;
+        
+        // Today's Attendance
+        const today = dashboardData.attendance;
+        let todayHtml = `
+            <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                <div style="flex:1; background:#e8f5e9; padding:15px; border-radius:10px;">
+                    <strong style="font-size:18px;">✅ Present: ${today.today_present || 0}</strong>
+                    <ul style="margin-top:10px; padding-left:20px;">
+                        ${today.present_list?.map(s => `<li>${s.name} ${s.belt ? `(${s.belt})` : ''}</li>`).join('') || '<li>None</li>'}
+                    </ul>
+                </div>
+                <div style="flex:1; background:#ffebee; padding:15px; border-radius:10px;">
+                    <strong style="font-size:18px;">❌ Absent: ${today.today_absent || 0}</strong>
+                    <ul style="margin-top:10px; padding-left:20px;">
+                        ${today.absent_list?.map(s => `<li>${s.name}</li>`).join('') || '<li>None</li>'}
+                    </ul>
+                </div>
+            </div>
+        `;
+        document.getElementById('todayAttendance').innerHTML = todayHtml;
+        
+        // Monthly Attendance - Filter by school
+        let monthlyData = today.monthly_summary || [];
+        if (currentSchoolId !== 'all') {
+            const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+            const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+            monthlyData = monthlyData.filter(s => schoolStudentNames.has(s.name));
+        }
+        
+        if (monthlyData.length > 0) {
+            let monthlyHtml = '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr><th>Student</th><th>Present</th><th>Total</th><th>%</th></tr></thead><tbody>';
+            monthlyData.forEach(s => {
+                const percent = s.percentage || 0;
+                let color = percent >= 75 ? '#4CAF50' : (percent >= 60 ? '#ff9800' : '#f44336');
+                monthlyHtml += `<tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.present}</td>
+                    <td>${s.total}</td>
+                    <td><span style="color:${color}; font-weight:bold;">${percent}%</span></td>
+                </tr>`;
+            });
+            monthlyHtml += '</tbody>}</div>';
+            document.getElementById('monthlyAttendance').innerHTML = monthlyHtml;
+        } else {
+            document.getElementById('monthlyAttendance').innerHTML = '<p class="empty-state">No attendance data for this month</p>';
+        }
+        
+        // Low Attendance
+        let lowData = today.low_attendance || [];
+        if (currentSchoolId !== 'all') {
+            const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+            const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+            lowData = lowData.filter(s => schoolStudentNames.has(s.name));
+        }
+        
+        if (lowData.length > 0) {
+            let lowHtml = '';
+            lowData.forEach(s => {
+                lowHtml += `
+                    <div class="student-item">
+                        <div>
+                            <div class="student-name">${s.name}</div>
+                            <div class="student-detail">${s.belt || 'No belt'}</div>
+                        </div>
+                        <div>
+                            <span class="badge badge-danger">${s.percentage}% attendance</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill low" style="width: ${s.percentage}%;"></div>
+                    </div>
+                `;
+            });
+            document.getElementById('lowAttendance').innerHTML = lowHtml;
+        } else {
+            document.getElementById('lowAttendance').innerHTML = '<p class="empty-state">✅ All students have good attendance!</p>';
+        }
+    }
+    
+	function updateFeesTab() {
+		if (!dashboardData?.fees) return;
+		
+		// Pending Fees - Filter by school
+		let pendingData = dashboardData.fees.pending_list || [];
+		if (currentSchoolId !== 'all') {
+			const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+			const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+			pendingData = pendingData.filter(f => schoolStudentNames.has(f.student));
+		}
+		
+		if (pendingData.length > 0) {
+			let pendingHtml = '';
+			pendingData.forEach(f => {
+				pendingHtml += `
+					<div class="student-item">
+						<div>
+							<div class="student-name">${f.student}</div>
+							<div class="student-detail">${f.month} | Due: ${f.due_date}</div>
+						</div>
+						<div><span class="badge badge-warning">RM ${f.amount}</span></div>
 					</div>
 				`;
-			}
-			html += '</div>';
-		}
-		document.getElementById('collectionBreakdownList').innerHTML = html;
-		document.getElementById('collectionModal').style.display = 'block';
-	}
-
-	function showCollectionDetails(schoolName) {
-		const breakdown = dashboardData.collection_breakdown;
-		const schoolData = breakdown.filter(item => item.school === schoolName);
-		
-		let html = '';
-		if (schoolData.length === 0) {
-			html = '<p>No collection data for this school.</p>';
-		} else {
-			html = '<table style="width:100%; border-collapse:collapse;"><thead><tr><th>Month</th><th>Amount (RM)</th></tr></thead><tbody>';
-			schoolData.forEach(item => {
-				html += '<tr>' +
-					'<td>' + item.month + '</td>' +
-					'<td><strong>RM ' + item.amount.toFixed(2) + '</strong></td>' +
-					'</tr>';
 			});
-			html += '</tbody></table>';
+			document.getElementById('pendingFeesList').innerHTML = pendingHtml;
+		} else {
+			document.getElementById('pendingFeesList').innerHTML = '<p class="empty-state">✅ No pending fees!</p>';
 		}
 		
-		// Create a new modal or reuse existing one
-		let collectionDetailModal = document.getElementById('collectionDetailModal');
-		if (!collectionDetailModal) {
-			// Create modal if it doesn't exist
-			const modalHtml = `
-				<div id="collectionDetailModal" class="modal">
-					<div class="modal-content">
-						<button class="close-modal" onclick="closeModal('collectionDetailModal')">× Close</button>
-						<button class="back-btn" onclick="backToCollectionSchools()">← Back to Schools</button>
-						<h3 id="collectionSchoolTitle"></h3>
-						<div id="collectionDetailList"></div>
+		// Overdue Fees - Filter by school
+		let overdueData = dashboardData.fees.overdue_list || [];
+		if (currentSchoolId !== 'all') {
+			const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+			const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+			overdueData = overdueData.filter(f => schoolStudentNames.has(f.student));
+		}
+		
+		if (overdueData.length > 0) {
+			let overdueHtml = '';
+			overdueData.forEach(f => {
+				overdueHtml += `
+					<div class="student-item">
+						<div>
+							<div class="student-name">${f.student}</div>
+							<div class="student-detail">${f.month} | Overdue: ${f.days_overdue} days</div>
+						</div>
+						<div><span class="badge badge-danger">RM ${f.amount}</span></div>
 					</div>
-				</div>
-			`;
-			document.body.insertAdjacentHTML('beforeend', modalHtml);
+				`;
+			});
+			document.getElementById('overdueFeesList').innerHTML = overdueHtml;
+		} else {
+			document.getElementById('overdueFeesList').innerHTML = '<p class="empty-state">✅ No overdue fees!</p>';
 		}
 		
-		document.getElementById('collectionSchoolTitle').innerHTML = '📊 ' + schoolName + ' - Monthly Collection';
-		document.getElementById('collectionDetailList').innerHTML = html;
-		document.getElementById('collectionModal').style.display = 'none';
-		document.getElementById('collectionDetailModal').style.display = 'block';
-	}
-
-	function backToCollectionSchools() {
-		document.getElementById('collectionDetailModal').style.display = 'none';
-		document.getElementById('collectionModal').style.display = 'block';
-	}    
-	
-	function showPendingSchools() {
-        const schools = dashboardData.pending_by_school;
-        let html = '';
-        if (!schools || schools.length === 0) {
-            html = '<p style="text-align:center; padding:20px;">No pending fees.</p>';
-        } else {
-            html = schools.map(school => `
-                <div class="school-card" onclick="showPendingDetails('${school.school}')">
-                    <span class="school-name">${school.school}</span>
-                    <span class="school-count">${school.pending_count} pending</span>
-                </div>
-            `).join('');
-        }
-        document.getElementById('pendingSchoolList').innerHTML = html;
-        document.getElementById('pendingSchoolModal').style.display = 'block';
-    }
-
-    function showPendingDetails(schoolName) {
-        const details = dashboardData.pending_details[schoolName] || [];
-        let html = '';
-        if (details.length === 0) {
-            html = '<p>No pending fees for this school.</p>';
-        } else {
-            html = '<table style="width:100%; border-collapse:collapse;"><thead><tr><th>Student ID</th><th>Student</th><th>Month</th><th>Amount (RM)</th><th>Due Date</th></tr></thead><tbody>';
-            details.forEach(item => {
-                html += '<tr>' +
-                    '<td>' + item.student_id + '</td>' +
-                    '<td>' + item.student + '</td>' +
-                    '<td>' + item.month + '</td>' +
-                    '<td><strong>RM ' + item.amount.toFixed(2) + '</strong></td>' +
-                    '<td>' + item.due_date + '</td>' +
-                    '</tr>';
-            });
-            html += '</tbody></table>';
-        }
-        document.getElementById('pendingSchoolTitle').innerHTML = '📋 ' + schoolName + ' - Pending Fees';
-        document.getElementById('pendingDetailList').innerHTML = html;
-        document.getElementById('pendingSchoolModal').style.display = 'none';
-        document.getElementById('pendingDetailModal').style.display = 'block';
-    }
-
-    function showOverdueSchools() {
-        const schools = dashboardData.overdue_by_school;
-        let html = '';
-        if (!schools || schools.length === 0) {
-            html = '<p style="text-align:center; padding:20px;">No overdue fees.</p>';
-        } else {
-            html = schools.map(school => `
-                <div class="school-card" onclick="showOverdueDetails('${school.school}')">
-                    <span class="school-name">${school.school}</span>
-                    <span class="school-count overdue">${school.overdue_count} overdue</span>
-                </div>
-            `).join('');
-        }
-        document.getElementById('overdueSchoolList').innerHTML = html;
-        document.getElementById('overdueSchoolModal').style.display = 'block';
-    }
-
-    function showOverdueDetails(schoolName) {
-        const details = dashboardData.overdue_details[schoolName] || [];
-        let html = '';
-        if (details.length === 0) {
-            html = '<p>No overdue fees for this school.</p>';
-        } else {
-            html = '<table style="width:100%; border-collapse:collapse;"><thead><tr><th>Student ID</th><th>Student</th><th>Month</th><th>Amount (RM)</th><th>Due Date</th></tr></thead><tbody>';
-            details.forEach(item => {
-                html += '<tr>' +
-                    '<td>' + item.student_id + '</td>' +
-                    '<td>' + item.student + '</td>' +
-                    '<td>' + item.month + '</td>' +
-                    '<td><strong style="color:red;">RM ' + item.amount.toFixed(2) + '</strong></td>' +
-                    '<td style="color:red;">' + item.due_date + '</td>' +
-                    '</tr>';
-            });
-            html += '</tbody></table>';
-        }
-        document.getElementById('overdueSchoolTitle').innerHTML = '⚠️ ' + schoolName + ' - Overdue Fees';
-        document.getElementById('overdueDetailList').innerHTML = html;
-        document.getElementById('overdueSchoolModal').style.display = 'none';
-        document.getElementById('overdueDetailModal').style.display = 'block';
-    }
-
-    function closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-    }
-
-    function backToPendingSchools() {
-        document.getElementById('pendingDetailModal').style.display = 'none';
-        document.getElementById('pendingSchoolModal').style.display = 'block';
-    }
-
-    function backToOverdueSchools() {
-        document.getElementById('overdueDetailModal').style.display = 'none';
-        document.getElementById('overdueSchoolModal').style.display = 'block';
-    }
-
-    window.onclick = function(event) {
-		const modals = ['collectionModal', 'collectionDetailModal', 'pendingSchoolModal', 'pendingDetailModal', 'overdueSchoolModal', 'overdueDetailModal'];
-		modals.forEach(modalId => {
-			const modal = document.getElementById(modalId);
-			if (modal && event.target === modal) {
-				closeModal(modalId);
+		// ========== FEE CHART - IKUT SEKOLAH YANG DIPILIH ==========
+		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+		let collections = [];
+		
+		if (currentSchoolId === 'all') {
+			// Kalau pilih ALL SCHOOLS, guna overall collection
+			collections = dashboardData.fees.monthly_collection || Array(12).fill(0);
+		} else {
+			// Kalau pilih sekolah tertentu, guna collection_by_school untuk sekolah tu
+			const collectionBySchool = dashboardData.fees.collection_by_school || {};
+			collections = collectionBySchool[currentSchoolId] || Array(12).fill(0);
+		}
+		
+		if (feeChart) feeChart.destroy();
+		const ctx = document.getElementById('feeChart').getContext('2d');
+		feeChart = new Chart(ctx, {
+			type: 'bar',
+			data: { 
+				labels: months, 
+				datasets: [{ 
+					label: currentSchoolId === 'all' ? 'Collection (RM) - ALL SCHOOLS' : `Collection (RM)`, 
+					data: collections, 
+					backgroundColor: '#4CAF50' 
+				}] 
+			},
+			options: { 
+				responsive: true, 
+				maintainAspectRatio: true, 
+				scales: { y: { beginAtZero: true, title: { display: true, text: 'Amount (RM)' } } }
 			}
 		});
+		
+		// Recent Payments - Filter by school
+		let recentData = dashboardData.fees.recent_payments || [];
+		if (currentSchoolId !== 'all') {
+			const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+			const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+			recentData = recentData.filter(p => schoolStudentNames.has(p.student));
+		}
+		
+		if (recentData.length > 0) {
+			let recentHtml = '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr><th>Student</th><th>Amount</th><th>Date</th></tr></thead><tbody>';
+			recentData.forEach(p => {
+				recentHtml += `<tr><td><strong>${p.student}</strong></td><td>RM ${p.amount}</td><td>${p.date}</td></tr>`;
+			});
+			recentHtml += '</tbody></table></div>';
+			document.getElementById('recentPayments').innerHTML = recentHtml;
+		} else {
+			document.getElementById('recentPayments').innerHTML = '<p class="empty-state">No recent payments</p>';
+		}
 	}
-
+    
+    function updateGradingTab() {
+        if (!dashboardData?.grading) return;
+        
+        // Belt Chart (same for all schools)
+        const beltData = dashboardData.grading.belt_distribution || {};
+        const beltLabels = Object.keys(beltData);
+        const beltCounts = Object.values(beltData);
+        
+        if (beltChart) beltChart.destroy();
+        const ctx = document.getElementById('beltChart').getContext('2d');
+        beltChart = new Chart(ctx, {
+            type: 'pie',
+            data: { labels: beltLabels, datasets: [{ data: beltCounts, backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#FFC107'] }] },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+        
+        // Ready for Grading - Filter by school
+        let readyData = dashboardData.grading.ready_students || [];
+        if (currentSchoolId !== 'all') {
+            const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+            const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+            readyData = readyData.filter(s => schoolStudentNames.has(s.name));
+        }
+        
+        if (readyData.length > 0) {
+            let readyHtml = '';
+            readyData.forEach(s => {
+                readyHtml += `
+                    <div class="student-item">
+                        <div>
+                            <div class="student-name">${s.name}</div>
+                            <div class="student-detail">Current: ${s.current_belt} → Next: ${s.next_belt}</div>
+                        </div>
+                        <div><span class="badge badge-success">${s.attendance_percent}% attendance</span></div>
+                    </div>
+                `;
+            });
+            document.getElementById('readyForGrading').innerHTML = readyHtml;
+        } else {
+            document.getElementById('readyForGrading').innerHTML = '<p class="empty-state">No students ready for grading yet</p>';
+        }
+        
+        // Belt Summary - Filter by school counts
+        let summaryHtml = '<div class="two-columns">';
+        if (currentSchoolId === 'all') {
+            for (const [belt, count] of Object.entries(beltData)) {
+                summaryHtml += `<div class="stat-card"><div class="stat-number">${count}</div><div class="stat-label">${belt}</div></div>`;
+            }
+        } else {
+            // Calculate belt counts for selected school only
+            const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+            const schoolBeltCounts = {};
+            schoolStudents.forEach(s => {
+                schoolBeltCounts[s.belt] = (schoolBeltCounts[s.belt] || 0) + 1;
+            });
+            for (const [belt, count] of Object.entries(schoolBeltCounts)) {
+                summaryHtml += `<div class="stat-card"><div class="stat-number">${count}</div><div class="stat-label">${belt}</div></div>`;
+            }
+        }
+        summaryHtml += '</div>';
+        document.getElementById('beltSummary').innerHTML = summaryHtml;
+    }
+    
+    function updateInactiveTab() {
+        if (!dashboardData?.inactive) return;
+        
+        // Inactive 30 days - Filter by school
+        let inactive30Data = dashboardData.inactive.inactive_30 || [];
+        if (currentSchoolId !== 'all') {
+            const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+            const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+            inactive30Data = inactive30Data.filter(s => schoolStudentNames.has(s.name));
+        }
+        
+        if (inactive30Data.length > 0) {
+            let html = '';
+            inactive30Data.forEach(s => {
+                html += `<div class="student-item"><div><div class="student-name">${s.name}</div><div class="student-detail">Last class: ${s.last_attendance}</div></div><div><span class="badge badge-warning">${s.days_inactive} days</span></div></div>`;
+            });
+            document.getElementById('inactive30').innerHTML = html;
+        } else {
+            document.getElementById('inactive30').innerHTML = '<p class="empty-state">✅ No inactive students &gt;30 days</p>';
+        }
+        
+        // Inactive 60 days - Filter by school
+        let inactive60Data = dashboardData.inactive.inactive_60 || [];
+        if (currentSchoolId !== 'all') {
+            const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+            const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+            inactive60Data = inactive60Data.filter(s => schoolStudentNames.has(s.name));
+        }
+        
+        if (inactive60Data.length > 0) {
+            let html = '';
+            inactive60Data.forEach(s => {
+                html += `<div class="student-item"><div><div class="student-name">${s.name}</div><div class="student-detail">Last class: ${s.last_attendance}</div></div><div><span class="badge badge-danger">${s.days_inactive} days</span></div></div>`;
+            });
+            document.getElementById('inactive60').innerHTML = html;
+        } else {
+            document.getElementById('inactive60').innerHTML = '<p class="empty-state">✅ No students inactive &gt;60 days</p>';
+        }
+        
+        // New Students - Filter by school
+        let newStudentsData = dashboardData.students?.new_students || [];
+        if (currentSchoolId !== 'all') {
+            const schoolStudents = filterStudentsBySchool(dashboardData.students?.all_students || []);
+            const schoolStudentNames = new Set(schoolStudents.map(s => s.name));
+            newStudentsData = newStudentsData.filter(s => schoolStudentNames.has(s.name));
+        }
+        
+        if (newStudentsData.length > 0) {
+            let html = '';
+            newStudentsData.forEach(s => {
+                html += `<div class="student-item"><div><div class="student-name">${s.name}</div><div class="student-detail">Joined: ${s.join_date} | Belt: ${s.belt}</div></div><div><span class="badge badge-info">New!</span></div></div>`;
+            });
+            document.getElementById('newStudents').innerHTML = html;
+        } else {
+            document.getElementById('newStudents').innerHTML = '<p class="empty-state">No new students this month</p>';
+        }
+    }
+    
+    function updateStudentsTab() {
+        if (!dashboardData?.students) return;
+        
+        let allStudents = dashboardData.students.all_students || [];
+        // Filter by selected school
+        if (currentSchoolId !== 'all') {
+            allStudents = allStudents.filter(s => s.school_id == currentSchoolId);
+        }
+        renderStudentList(allStudents);
+    }
+    
+    function renderStudentList(students) {
+        if (students.length > 0) {
+            let html = '';
+            students.forEach(s => {
+                html += `
+                    <div class="student-item" onclick="showStudentDetails(${s.id})" style="cursor:pointer;">
+                        <div>
+                            <div class="student-name">${s.name}</div>
+                            <div class="student-detail">${s.student_id} | ${s.belt} | ${s.school}</div>
+                        </div>
+                        <div><span class="badge ${s.is_active ? 'badge-success' : 'badge-danger'}">${s.is_active ? 'Active' : 'Inactive'}</span></div>
+                    </div>
+                `;
+            });
+            document.getElementById('allStudents').innerHTML = html;
+        } else {
+            document.getElementById('allStudents').innerHTML = '<p class="empty-state">No students found for this school</p>';
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('studentSearch');
+        if (searchInput) {
+            searchInput.oninput = (e) => {
+                const search = e.target.value.toLowerCase();
+                let allData = dashboardData?.students?.all_students || [];
+                if (currentSchoolId !== 'all') {
+                    allData = allData.filter(s => s.school_id == currentSchoolId);
+                }
+                const filtered = allData.filter(s => 
+                    s.name.toLowerCase().includes(search) || 
+                    s.student_id.toLowerCase().includes(search) || 
+                    (s.ic_number && s.ic_number.includes(search))
+                );
+                renderStudentList(filtered);
+            };
+        }
+    }
+    
+    function showStudentDetails(studentId) {
+        let allStudents = dashboardData?.students?.all_students || [];
+        const student = allStudents.find(s => s.id == studentId);
+        if (student) {
+            const modalContent = `
+                <h3>${student.name}</h3>
+                <p><strong>Student ID:</strong> ${student.student_id}</p>
+                <p><strong>IC Number:</strong> ${student.ic_number}</p>
+                <p><strong>School:</strong> ${student.school}</p>
+                <p><strong>Belt:</strong> ${student.belt}</p>
+                <p><strong>Phone:</strong> ${student.phone || 'N/A'}</p>
+                <p><strong>Parent IC:</strong> ${student.parent_ic || 'N/A'}</p>
+                <p><strong>Join Date:</strong> ${student.join_date}</p>
+                <p><strong>Status:</strong> ${student.is_active ? 'Active' : 'Inactive'}</p>
+                <div class="action-buttons" style="margin-top:15px;">
+                    <a href="/admin/students/student/${student.id}/change/" class="action-btn">✏️ Edit Student</a>
+                    <a href="/fees/student/${student.id}/" class="action-btn">💰 View Fees</a>
+                </div>
+            `;
+            document.getElementById('studentModalContent').innerHTML = modalContent;
+            document.getElementById('studentModal').style.display = 'block';
+        }
+    }
+    
+    function closeModal() {
+        document.getElementById('studentModal').style.display = 'none';
+    }
+    
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        event.target.classList.add('active');
+    }
+    
+    function scrollToTab(tabName) {
+        showTab(tabName);
+        document.getElementById(`tab-${tabName}`).scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function refreshAllData() {
+        document.querySelectorAll('.loading').forEach(el => el.innerHTML = '<div class="loading">Loading...</div>');
+        loadDashboard();
+    }
+    
+    // Load dashboard on page load
     loadDashboard();
     </script>
 </body>

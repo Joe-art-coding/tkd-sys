@@ -559,43 +559,48 @@
 						{% endif %}
 					</div>
                     <div class="dashboard-links">
-						<a href="/admin/" class="dashboard-card">
-							<div class="dashboard-icon">⚙️</div>
-							<h4>Admin Panel</h4>
-							<p>System settings</p>
-						</a>
-						<a href="/dashboard/" class="dashboard-card">
-							<div class="dashboard-icon">📊</div>
-							<h4>Dashboard</h4>
-							<p>Statistics & reports</p>
-						</a>
-						{% if user.is_superuser or user.profile.role == 'club_admin' %}
-							<a href="{% url 'fee_student_list' %}" class="dashboard-card">
-								<div class="dashboard-icon">💰</div>
-								<h4>Fees Management</h4>
-								<p>Student fee tracking</p>
-							</a>
-						{% else %}
-							<a href="{% url 'fee_school_list' %}" class="dashboard-card">
-								<div class="dashboard-icon">💰</div>
-								<h4>Fees Management</h4>
-								<p>Student fee tracking</p>
-							</a>
-						{% endif %}
-						<!-- ONLY ADD THIS - Contact Management -->
-						{% if user.profile.role == 'club_admin' %}
-						<a href="/manage-contacts/" class="dashboard-card">
-							<div class="dashboard-icon">📞</div>
-							<h4>Contact Management</h4>
-							<p>Manage emergency contacts & info</p>
-						</a>
-						{% endif %}
-						<a href="/attendance/take/" class="dashboard-card">
-							<div class="dashboard-icon">📋</div>
-							<h4>Attendance</h4>
-							<p>Mark attendance</p>
-						</a>
-					</div>
+    <a href="/admin/" class="dashboard-card">
+        <div class="dashboard-icon">⚙️</div>
+        <h4>Admin Panel</h4>
+        <p>System settings</p>
+    </a>
+    <a href="/dashboard/" class="dashboard-card">
+        <div class="dashboard-icon">📊</div>
+        <h4>Dashboard</h4>
+        <p>Statistics & reports</p>
+    </a>
+    <!-- STUDENTS LINK - ADD THIS -->
+    <a href="{% url 'coach_schools' %}" class="dashboard-card">
+        <div class="dashboard-icon">👥</div>
+        <h4>Students</h4>
+        <p>View students by school</p>
+    </a>
+    {% if user.is_superuser or user.profile.role == 'club_admin' %}
+        <a href="{% url 'fee_student_list' %}" class="dashboard-card">
+            <div class="dashboard-icon">💰</div>
+            <h4>Fees Management</h4>
+            <p>Student fee tracking</p>
+        </a>
+    {% else %}
+        <a href="{% url 'fee_school_list' %}" class="dashboard-card">
+            <div class="dashboard-icon">💰</div>
+            <h4>Fees Management</h4>
+            <p>Student fee tracking</p>
+        </a>
+    {% endif %}
+    {% if user.profile.role == 'club_admin' %}
+    <a href="/manage-contacts/" class="dashboard-card">
+        <div class="dashboard-icon">📞</div>
+        <h4>Contact Management</h4>
+        <p>Manage emergency contacts & info</p>
+    </a>
+    {% endif %}
+    <a href="/attendance/take/" class="dashboard-card">
+        <div class="dashboard-icon">📋</div>
+        <h4>Attendance</h4>
+        <p>Mark attendance</p>
+    </a>
+</div>
 
                     <a href="/admin/logout/" class="card-btn card-btn-admin" style="display: block; max-width: 200px; margin: 2rem auto 0;">
                         <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout

@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div style="padding: 20px;">
+    <a href="{% url 'coach_schools' %}" style="background: #666; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; display: inline-block; margin-bottom: 20px;">← Back to Schools</a>
+    
+    <h2>{{ school.name }} - Students</h2>
+    
+    <div style="margin-bottom: 20px;">
+        <a href="/admin/students/student/add/?school={{ school.id }}" class="button" style="background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
+            + Add New Student
+        </a>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; margin-top: 20px;">
+        <thead>
+            <tr>
+                <th style="padding: 12px; text-align: left; background: #4CAF50; color: white; width: 50px;">No.</th>
+                <th style="padding: 12px; text-align: left; background: #4CAF50; color: white;">Student ID</th>
+                <th style="padding: 12px; text-align: left; background: #4CAF50; color: white;">Name</th>
+                <th style="padding: 12px; text-align: left; background: #4CAF50; color: white;">Belt</th>
+                <th style="padding: 12px; text-align: left; background: #4CAF50; color: white;">Phone</th>
+                <th style="padding: 12px; text-align: left; background: #4CAF50; color: white;">Status</th>
+                <th style="padding: 12px; text-align: left; background: #4CAF50; color: white;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 10px;">{{ forloop.counter }}</td>
+                <td style="padding: 10px;">{{ student.student_id }}</td>
+                <td style="padding: 10px;">{{ student.name }}</td>
+                <td style="padding: 10px;">{{ student.get_belt_rank_display }}</td>
+                <td style="padding: 10px;">{{ student.phone }}</td>
+                <td style="padding: 10px;">{% if student.is_active %}✅ Active{% else %}❌ Inactive{% endif %}</td>
+                <td style="padding: 10px;">
+                    <a href="/admin/students/student/{{ student.id }}/change/" style="color: #4CAF50; text-decoration: none; margin-right: 10px;">✏️ Edit</a>
+                    <a href="/admin/students/student/{{ student.id }}/delete/" style="color: #f44336; text-decoration: none;">🗑️ Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="padding: 20px; text-align: center;">No students found for this school.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
