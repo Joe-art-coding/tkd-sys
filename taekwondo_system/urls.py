@@ -21,7 +21,10 @@ from students.views import (
     DashboardView,
     DashboardPageView,
     MartialArtsHomeView,
-    ParentDashboardView
+    ParentDashboardView,
+    coach_schools_list,
+    coach_school_students,
+    CoachDashboardAPI,  # ADD THIS IMPORT
 )
 from attendance.views import attendance_take
 from fees import views as fees_views
@@ -32,10 +35,10 @@ from schools.views import (
     add_coach,
     edit_coach,
     delete_coach,
-    manage_contacts,      # ADDED
-    add_contact,          # ADDED
-    edit_contact,         # ADDED
-    delete_contact        # ADDED
+    manage_contacts,
+    add_contact,
+    edit_contact,
+    delete_contact,
 )
 
 # Custom admin login view
@@ -107,9 +110,8 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
 
-    # Fee management views (add this line with other fee paths)
+    # Fee management views
     path('fees/waive-bulk/', fees_views.fee_waive_bulk, name='fee_waive_bulk'),
-    # CHANGED: /fees/ now uses smart redirect based on user role
     path('fees/', fees_root_redirect, name='fees_root'),
     path('fees/all-students/', fees_views.fee_student_list, name='fee_student_list'),
     path('fees/student/<int:student_id>/', fees_views.fee_student_detail, name='fee_student_detail'),
@@ -152,8 +154,16 @@ urlpatterns = [
     path('api/coach/students/', CoachStudentsView.as_view(), name='coach_students'),
     path('api/coach/fees/', CoachFeesView.as_view(), name='coach_fees'),
     path('api/coach/attendance/', CoachAttendanceView.as_view(), name='coach_attendance'),
+    
+    # NEW: Coach Dashboard API (ALL REPORTS IN ONE)
+    path('api/coach/dashboard/', CoachDashboardAPI.as_view(), name='coach_dashboard_api'),
+
+    # Coach Students by School (WEB PAGES)
+    path('coach-schools/', coach_schools_list, name='coach_schools'),
+    path('coach-schools/<int:school_id>/students/', coach_school_students, name='coach_school_students'),
 ]
 
-# Serve media files in development
+# Serve media and static files in development (FIXED)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

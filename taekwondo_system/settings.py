@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-bwd8x)vy7@2!76qyhix!j&m2qlfr7(h#botjv#9fz)co)k&z%y')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = True
 
 # ALLOWED HOSTS - Works for local, Render, and PythonAnywhere
 ALLOWED_HOSTS = [
@@ -33,8 +33,8 @@ ALLOWED_HOSTS = [
     '192.168.0.179',
     '192.168.1.*',
     '.onrender.com',
-    '.pythonanywhere.com',  # For PythonAnywhere
-    'taekwondo.pythonanywhere.com',  # Your PythonAnywhere username
+    '.pythonanywhere.com',
+    'taekwondo.pythonanywhere.com',
     'testserver',
 ]
 
@@ -161,7 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Kuala_Lumpur'  # Changed to Malaysia timezone
+TIME_ZONE = 'Asia/Kuala_Lumpur'
 
 USE_I18N = True
 
@@ -171,25 +171,25 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ← COMMENT FOR LOCAL
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'students/static')]
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Login URLs (for PythonAnywhere compatibility)
+# Login URLs
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Session settings (for better tablet/phone support)
+# Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_COOKIE_AGE = 86400
 SESSION_SAVE_EVERY_REQUEST = True
 
-# CSRF settings (for PythonAnywhere)
+# CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     'https://*.pythonanywhere.com',
     'http://*.pythonanywhere.com',
@@ -198,7 +198,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
 ]
 
-# For tablet access - use host header
+# For tablet access
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
